@@ -8,7 +8,7 @@ const labels = ['输入','缓存读取¹','缓存写入¹','输出','推理输�
 const fmt = v => v == null ? '—' : Number(v).toLocaleString('zh-CN',{maximumFractionDigits:6});
 const date = v => !v ? '时间未知' : new Date(typeof v === 'number' ? v * 1000 : v).toLocaleString('zh-CN');
 function el(tag, text, cls) {const node=document.createElement(tag);if(text!=null)node.textContent=text;if(cls)node.className=cls;return node;}
-async function api(path) {const query=new URLSearchParams();if(selected)query.set('thread',selected);if(path==='/api/snapshot')query.set('limit',sessionLimit);const r=await fetch(path+'?'+query,{headers:{Authorization:'Bearer '+key}});if(!r.ok)throw Error('本机接口返回 '+r.status+'；请重新从插件打开仪表');return r.json();}
+async function api(path) {const query=new URLSearchParams();if(selected)query.set('thread',selected);if(path==='/api/snapshot'){query.set('limit',sessionLimit);if(fragment.get('scope')==='thread')query.set('scope','thread');}const r=await fetch(path+'?'+query,{headers:{Authorization:'Bearer '+key}});if(!r.ok)throw Error('本机接口返回 '+r.status+'；请重新从插件打开仪表');return r.json();}
 function render() {
  const s=snapshot.selected, events=s?.events||[], last=events.at(-1), turn=s?.turns.at(-1);
  const options=snapshot.sessions; $('threads').replaceChildren(el('option','请选择会话'));$('threads').firstChild.value='';

@@ -242,9 +242,42 @@ class Ledger:
         self.cache = {}
         self.lock = threading.Lock()
 
-    def snapshot(self, thread_id=None, limit=1):
+    def catalog(self, limit=10):
+        """List names/IDs from standard rollout paths and title metadata, never log bodies."""
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise ValueError('limit must be between 1 and 100')
+        found = {}
+        for folder in ('sessions', 'archived_sessions'):
+            for path in (self.home / folder).rglob('*.jsonl'):
+                match = re.search(r'([0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12})$', path.stem)
+                if not match or path.is_symlink():
+                    continue
+                try:
+                    identifier, stamp = match.group(1), path.stat().st_mtime
+                    found[identifier] = max(stamp, found.get(identifier, 0))
+                except OSError:
+                    continue
+        # Exclude internal reviewers/subagents before titles enter the UI.
+        for database in sorted(self.home.resolve().glob('state_*.sqlite')):
+            try:
+                with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True, timeout=.2)) as db:
+                    columns = {r[1] for r in db.execute('PRAGMA table_info(threads)')}
+                    if {'id', 'source'}.issubset(columns):
+                        for identifier, source in db.execute('SELECT id,source FROM threads'):
+                            if source not in ('cli', 'vscode', 'app-server', 'appServer', 'desktop'):
+                                found.pop(identifier, None)
+            except sqlite3.Error:
+                continue
+        ordered = sorted(found, key=found.get, reverse=True)[:limit]
+        titles = read_titles(self.home.resolve(), set(ordered)) if ordered else {}
+        return {'sessions': [{'id': key, 'title': ' '.join((titles.get(key) or '未命名会话').split())[:100], 'updatedAt': found[key]} for key in ordered],
+                'hasMore': len(found) > limit}
+
+    def snapshot(self, thread_id=None, limit=1, *, exact=False, include_messages=True):
         if type(limit) is not int or not 1 <= limit <= 1000:
             raise ValueError('limit must be an integer between 1 and 1000')
+        if exact and (not isinstance(thread_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', thread_id)):
+            raise ValueError('Exact selection requires a valid thread id')
         with self.lock:
             sessions, errors, candidates = {}, [], []
             # Enumerate only filenames/stat metadata; never open unloaded logs.
@@ -253,6 +286,8 @@ class Ledger:
                 if not root.exists():
                     continue
                 for path in root.rglob('*.jsonl'):
+                    if exact and path.stem != thread_id and not path.stem.endswith('-' + thread_id):
+                        continue
                     if path.is_symlink():
                         continue
                     try:
@@ -278,9 +313,15 @@ class Ledger:
                 loaded_paths.add(path)
                 if path not in self.cache or self.cache[path][0] != sig:
                     self.cache[path] = sig, parse(path)
-                item = self.cache[path][1]
-                sessions.setdefault(item['id'], item)
-            self.cache = {p: value for p, value in self.cache.items() if p in loaded_paths}
+                # Refresh LRU order so alternating panel requests reuse parsed logs.
+                cached = self.cache.pop(path)
+                self.cache[path] = cached
+                item = cached[1]
+                if not exact or item['id'] == thread_id:
+                    sessions.setdefault(item['id'], item)
+            # Retain a bounded working set across exact per-session requests.
+            capacity = max(32, len(loaded_paths))
+            self.cache = dict(list(self.cache.items())[-capacity:])
             ordered = list(sessions.values())
             unique = {}
             for session in ordered:
@@ -293,7 +334,7 @@ class Ledger:
             ordered = [dict(s, title=titles.get(s['id']) or s['title'] or '未命名会话',
                             titleSource='local_metadata' if s['id'] in titles else 'first_message_preview') for s in ordered]
             if selected:
-                selected = parse(Path(selected['source']), include_messages=True)
+                selected = parse(Path(selected['source']), include_messages=True) if include_messages else dict(selected)
                 selected['title'] = titles.get(selected_id) or selected['title'] or '未命名会话'
                 selected['titleSource'] = 'local_metadata' if selected_id in titles else 'first_message_preview'
             return {'generatedAt': time.time(), 'scope': '仅已加载会话；非全部本机或账号用量',
