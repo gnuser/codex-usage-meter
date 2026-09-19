@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import threading
 import time
+from .desktop import is_windows
 
 
 class AppServer:
@@ -21,7 +22,8 @@ class AppServer:
         self.timeout, self.seq = timeout, 0
         self.messages = queue.Queue()
         self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                        stderr=subprocess.DEVNULL, text=True, encoding='utf-8', env=env)
+                                        stderr=subprocess.DEVNULL, text=True, encoding='utf-8', env=env,
+                                        **({'creationflags': 0x08000000} if is_windows() else {}))
         self.reader = threading.Thread(target=self._read, daemon=True)
         self.reader.start()
         try:

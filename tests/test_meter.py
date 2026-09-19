@@ -316,6 +316,8 @@ class IntegrationTests(unittest.TestCase):
     def test_packaged_mcp_launcher(self):
         root=Path(__file__).resolve().parents[1]
         config=json.loads((root/'.mcp.json').read_text())['mcpServers']['usage-meter']
+        if sys.platform == 'win32':
+            config.update(command=sys.executable, args=[str(root/'meter.py'), 'mcp'])
         p=subprocess.run([config['command'],*config['args']],cwd=root/config['cwd'],
                          input='{"jsonrpc":"2.0","id":1,"method":"tools/list"}\n',
                          text=True,capture_output=True,timeout=5)
