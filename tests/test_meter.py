@@ -190,6 +190,17 @@ class LedgerTests(unittest.TestCase):
         for value in (0,-1,1001,True,'4'):
             with self.assertRaises(ValueError):Ledger(self.home).snapshot(limit=value)
 
+    def test_model_breakdown_and_ambiguous_gap(self):
+        self.write(self.head()+[event(tokens()),
+            {'type':'turn_context','payload':{'turn_id':'turn-1','model':'second-model'}},
+            event(tokens(200,40),tokens(),stamp='2026-09-19T00:00:02Z'),
+            event(tokens(400,80),tokens(),stamp='2026-09-19T00:00:03Z')])
+        r=parse(self.path,True)
+        by_model={m['model']:m['usage']['total_tokens'] for m in r['models']}
+        self.assertEqual(by_model,{'test-model':120,'second-model':120,'模型未知 / 区间无法归因':240})
+        self.assertEqual(r['observedUsage']['total_tokens'],480)
+        self.assertEqual(r['turns'][0]['models'],r['models'])
+
     def test_empty_home_and_removed_file(self):
         ledger=Ledger(self.home);self.write(self.head()+[event(tokens())]);ledger.snapshot()
         self.path.unlink()

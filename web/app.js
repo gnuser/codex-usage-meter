@@ -21,6 +21,7 @@ function render() {
  const turnMap=new Map((s?.turns||[]).map(t=>[t.id,t]));
  $('events').replaceChildren(...events.slice(-200).reverse().map(e=>{const td=el('td',date(e.timestamp));td.append(el('small',e.model||'模型未知'),el('small',turnMap.get(e.turnId)?.preview||'无法归因到单轮'));return row(td,e.usage,`行 ${e.line} · ${e.quality==='interval_delta'?'区间差额':'last 调用'}`)}));
  renderConversations(s);
+ renderCharts();
  const warnings=[...snapshot.errors,...(s?.warnings||[])];if(selected&&!s)warnings.push('所选会话不在已加载范围；可继续加载或从列表选择');
  $('warnings').replaceChildren(...warnings.map(w=>el('li',w)));
  $('coverage').textContent=`读取 ${snapshot.files} 个文件 / ${snapshot.sessions.length} 个会话 / ${snapshot.observedRecords} 个去重记录。${snapshot.coverage}`;
@@ -41,6 +42,7 @@ function renderConversations(s){
   block.open=opened.has(block.dataset.key)||(first&&index===turns.length-1);
   const summary=el('summary',`第 ${index+1} 轮 · ${t.preview||'未记录用户消息'}`);
   summary.append(el('strong',`${fmt(t.usage.total_tokens)} tokens`));block.append(summary);
+  block.append(el('p',(t.models||[]).map(m=>m.model).join(' / ')||'模型未知','model-label'));
   block.append(el('p',fields.map((f,i)=>`${labels[i]} ${fmt(t.usage[f])}`).join(' · '),'note'));
   if(!t.messages?.length)block.append(el('p','日志中未找到这一轮的消息正文。'));
   (t.messages||[]).forEach(m=>{
@@ -53,6 +55,47 @@ function renderConversations(s){
  if(!turns.length)container.append(el('p',s?'尚无可关联的对话轮次。':'选择一个会话后查看具体内容。'));
  if(s?.unattributedMessages?.length){const d=el('details');d.append(el('summary','无法关联到轮次的历史消息（不分摊消耗）'));s.unattributedMessages.forEach(m=>d.append(el('pre',m.role+'：'+m.text)));container.append(d)}
 }
+const metricLabels={total_tokens:'总 token',uncached:'非缓存输入',output_tokens:'输出 token',cached_input_tokens:'缓存读取',reasoning_output_tokens:'推理输出'};
+function renderBars(id,rows,onSelect){
+ const key=$('metric').value;
+ const list=rows.map(r=>({...r,value:UsageCharts.metric(r.usage,key)}));
+ if($('chartSort').value==='usage')list.sort((a,b)=>(b.value??-1)-(a.value??-1));
+ const max=Math.max(0,...list.map(r=>r.value??0));
+ const nodes=list.map(r=>{
+  const row=el(onSelect?'button':'div',null,'bar-row'+(r.active?' active':''));
+  if(onSelect){row.type='button';row.disabled=loading;row.onclick=()=>onSelect(r.id);}
+  row.setAttribute('aria-label',`${r.label}，${metricLabels[key]} ${fmt(r.value)}，${r.meta||''}`);
+  const head=el('div',null,'bar-head');head.append(el('span',r.label,'bar-title'),el('strong',r.value===null?'未记录':fmt(r.value)));
+  const track=el('div',null,'bar-track');track.setAttribute('aria-hidden','true');
+  UsageCharts.segments(r.usage,key).forEach(segment=>{const bar=el('span',null,'bar-segment '+segment.kind);bar.style.width=(max?segment.value/max*100:0)+'%';track.append(bar)});
+  row.title=`${r.label}\n${metricLabels[key]}：${fmt(r.value)}\n${r.meta||''}`;
+  row.append(head,track,el('span',r.meta||'','bar-meta'));return row;
+ });
+ $(id).replaceChildren(...nodes);
+ if(!nodes.length)$(id).append(el('p','暂无已记录数据。','note'));
+}
+function renderCharts(){
+ if(!snapshot)return;
+ const s=snapshot.selected,turns=s?.turns||[];
+ const names=models=>(models||[]).map(m=>m.model).join(' / ')||'模型未知';
+ renderBars('sessionChart',snapshot.sessions.map(t=>({id:t.id,label:t.title||'未命名会话',usage:t.observedUsage||{},meta:names(t.models),active:t.id===selected})),async id=>{
+  if(loading)return;selected=id;account=null;fragment.set('thread',id);history.replaceState(null,'','#'+fragment);
+  if(await refresh())$('turnChartTitle').scrollIntoView({behavior:'smooth',block:'start'});
+ });
+ $('turnChartTitle').textContent=s?`${s.title} · 每轮消耗`:'选择会话后查看逐轮消耗';
+ renderBars('turnChart',turns.map((t,i)=>({id:t.id,label:`第 ${i+1} 轮 · ${t.preview||'未记录用户消息'}`,usage:t.usage,meta:`${names(t.models)} · ${t.records} 条调用 / 区间记录`})),id=>{
+  const target=[...$('conversations').children].find(d=>d.dataset.key===selected+':'+id);
+  if(target){target.open=true;target.scrollIntoView({behavior:'smooth',block:'start'});target.querySelector('summary')?.focus();}
+ });
+ renderBars('modelChart',(s?.models||[]).map(m=>({label:m.model,usage:m.usage,meta:`${m.records} 条调用 / 区间记录`})),null);
+ const ratio=UsageCharts.cacheRatio(s?.observedUsage);
+ const ranked=turns.map((t,i)=>({t,i,value:UsageCharts.metric(t.usage,$('metric').value)})).filter(r=>r.value!==null).sort((a,b)=>b.value-a.value);
+ const highest=ranked[0];
+ const notes=[['已记录轮次',String(turns.length)],['输入缓存占比',ratio===null?'未记录':(ratio*100).toFixed(1)+'%'],['所选指标最高',highest?`第 ${highest.i+1} 轮 · ${fmt(highest.value)}`:'未记录']];
+ $('insights').replaceChildren(...notes.map(([label,value])=>{const d=el('div');d.append(el('span',label),el('strong',value));return d}));
+}
+$('metric').onchange=renderCharts;
+$('chartSort').onchange=renderCharts;
 function localWindows(v){return ['primary','secondary'].flatMap(w=>{const a=v?.[w];if(!a)return [];const used=a.used_percent;return [{limitId:v.limit_id||'unknown',window:w,remainingPercent:typeof used==='number'?Math.max(0,Math.min(100,100-used)):null,windowDurationMins:a.window_minutes,resetsAt:a.resets_at}]});}
 function renderLimits(){
  const local=snapshot?.selected?.localLimits;
@@ -73,7 +116,7 @@ async function refresh(){
  if(loading)return;loading=true;$('refresh').disabled=true;$('threads').disabled=true;$('loadMore').disabled=true;
  try{snapshot=await api('/api/snapshot');if(!selected&&snapshot.selectedId){selected=snapshot.selectedId;fragment.set('thread',selected);history.replaceState(null,'','#'+fragment)}render();return true}
  catch(e){$('status').textContent=e.message;return false}
- finally{loading=false;$('refresh').disabled=false;$('threads').disabled=false;$('loadMore').disabled=!snapshot?.pagination?.hasMore||sessionLimit>=1000}
+ finally{loading=false;$('refresh').disabled=false;$('threads').disabled=false;$('loadMore').disabled=!snapshot?.pagination?.hasMore||sessionLimit>=1000;document.querySelectorAll('button.bar-row').forEach(b=>b.disabled=false)}
 }
 $('loadMore').onclick=async()=>{if(loading)return;const old=sessionLimit;sessionLimit=Math.min(sessionLimit+3,1000);if(!await refresh())sessionLimit=old};
 $('threads').onchange=()=>{selected=$('threads').value;account=null;fragment.set('thread',selected);history.replaceState(null,'','#'+fragment);refresh()};

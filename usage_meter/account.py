@@ -25,7 +25,7 @@ class AppServer:
         self.reader = threading.Thread(target=self._read, daemon=True)
         self.reader.start()
         try:
-            self.request('initialize', {'clientInfo': {'name': 'codex_usage_meter', 'version': '1.2.0'}})
+            self.request('initialize', {'clientInfo': {'name': 'codex_usage_meter', 'version': '1.3.0'}})
             self.send({'method': 'initialized', 'params': {}})
         except Exception:
             self.close()

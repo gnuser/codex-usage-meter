@@ -40,6 +40,16 @@ def fingerprint(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
 
+def model_breakdown(events):
+    groups = {}
+    for event in events:
+        # A gap may cover several models; do not assign the whole gap to the last model.
+        name = event.get('model') if event.get('quality') == 'last_reported_call' else None
+        name = name or '模型未知 / 区间无法归因'
+        groups.setdefault(name, []).append(event['usage'])
+    return [{'model': name, 'usage': add(rows), 'records': len(rows)} for name, rows in groups.items()]
+
+
 def message_text(payload):
     parts = []
     for item in payload.get('content', []):
@@ -203,7 +213,7 @@ def parse(path, include_messages=False):
                 if isinstance(attribution, str):
                     turn_order.setdefault(attribution, []).append(event)
         result['turns'] = [{'id': key, 'usage': add(e['usage'] for e in events),
-                            'records': len(events)} for key, events in turn_order.items()]
+                            'records': len(events), 'models': model_breakdown(events)} for key, events in turn_order.items()]
         if include_messages:
             for item in result['turns']:
                 key = item['id']
@@ -221,6 +231,8 @@ def parse(path, include_messages=False):
     except (OSError, UnicodeError) as exc:
         result['warnings'].append(f'日志不可读：{type(exc).__name__}')
     result['warnings'] = list(dict.fromkeys(result['warnings']))
+    result['observedUsage'] = add(e['usage'] for e in result['events'])
+    result['models'] = model_breakdown(result['events'])
     return result
 
 

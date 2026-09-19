@@ -60,6 +60,7 @@ def create_server(service, port=0):
                 return self.reply(403, {'error': 'Invalid Host'})
             url = urlsplit(self.path)
             assets = {'/': ('index.html', 'text/html; charset=utf-8'),
+                      '/chart-math.js': ('chart-math.js', 'text/javascript; charset=utf-8'),
                       '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                       '/style.css': ('style.css', 'text/css; charset=utf-8')}
             if url.path in assets:
@@ -105,7 +106,7 @@ def dispatch(service, request):
     if method == 'initialize':
         version = params.get('protocolVersion')
         return {'protocolVersion': version if version in ('2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25') else '2024-11-05',
-                'capabilities': {'tools': {}}, 'serverInfo': {'name': 'codex-usage-meter', 'version': '1.2.0'}}
+                'capabilities': {'tools': {}}, 'serverInfo': {'name': 'codex-usage-meter', 'version': '1.3.0'}}
     if method == 'ping':
         return {}
     if method == 'tools/list':
