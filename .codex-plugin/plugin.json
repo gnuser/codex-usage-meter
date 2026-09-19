@@ -1,0 +1,22 @@
+{
+  "name": "codex-usage-meter",
+  "version": "1.2.0",
+  "description": "本机 Codex 会话 token 与官方账号限额核对工具",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex 用量仪表",
+    "shortDescription": "逐轮 token 明细、累计用量与官方限额",
+    "longDescription": "只读本地日志，使用官方 App Server 查询限额；明确标注缺失值、历史快照与会话估算。",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": [
+      "查看本次会话 token 用量",
+      "打开用量仪表并查询官方剩余额度"
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}

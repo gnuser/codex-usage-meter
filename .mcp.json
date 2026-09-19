@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "usage-meter": {
+      "command": "./bin/launch",
+      "args": [],
+      "cwd": ".",
+      "env_vars": [
+        "CODEX_HOME",
+        "CODEX_USAGE_CODEX"
+      ]
+    }
+  }
+}
