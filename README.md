@@ -2,6 +2,38 @@
 
 一个可运行的本机 Codex 插件：Python 标准库 MCP 服务 + 中文浏览器仪表 + 用量技能（1.1：会话标题与逐轮正文）。**它记录 token，并查询官方账号限额；不承诺把每次调用精确换算成订阅额度或账单。**
 
+## 共用悬浮窗（macOS）
+
+所有会话共用一个 240×115 的小窗，显示最近 30 分钟有日志更新的会话、本轮与累计 token、最近 10 轮迷你柱状图。活跃不表示正在运行。数字采用 K/M/B/T，保留两位小数；各会话柱高独立缩放。点击标题通过 Codex 会话链接打开对应对话。
+
+菜单栏显示 `▥ 活跃数 · 剩余百分比`：活跃数每 15 秒更新，官方账号额度每 5 分钟查询。多个独立额度窗口取最低剩余百分比，悬停查看各窗口；不将额度相加或换算成剩余 token。读取失败显示 `—`，窗口隐藏时菜单栏继续更新。
+
+首次安装（macOS、Xcode Command Line Tools、Python 3.10+）：
+
+```sh
+python3 native/build.py
+python3 native/install_hook.py
+python3 floating.py show --thread YOUR_CODEX_THREAD_ID
+```
+
+安装器保留现有用户 hooks，修改前保存权限为 0600 的备份，不更改现有 hook 信任。**须在 Codex 的 `/hooks` 中审查并信任新加的 `floating.py hook` 定义**；未信任时 Codex 会跳过。使用插件自带 `hooks/hooks.json` 时不需重复注册用户 hook，但仍需构建窗口并信任 hook。
+
+- 窗口默认显示，跳转对话不自动收起；缩放、最小化、关闭按钮收起窗口。点击菜单栏或 Dock 的「Codex 用量」可重新展开，拖动边缘调整尺寸。
+- 菜单栏右键可退出并暂停自动打开；上述 `show` 命令恢复。
+- `UserPromptSubmit` 仅传递会话 ID，可启动共用窗口；运行中不强制展开。未实现识别 Codex 内单纯点击切换或接管审批。
+- 本地状态目录为 `~/Library/Application Support/CodexUsageMeter`，访问密钥文件权限 0600；不保存 hook 正文。
+- 无需管理员权限、辅助功能或屏幕录制权限。窗口退出后本机服务关闭。
+
+多会话展示参考 [OpenIsland 文档](https://github.com/Octane0411/open-vibe-island/blob/main/docs/hooks.md)，实现独立编写。
+
+## 浏览器小面板
+
+`usage_dashboard(thread_id=真实会话ID, view="panel")` 返回同一极简活跃会话列表的本机链接，`view="full"` 返回完整仪表。小面板每 5 秒刷新，隐藏时暂停；仅解析最近活跃会话的计数，不返回消息正文。会话目录最多读取最新 100 条元数据。点击标题打开 Codex 对话，顶部剩余额度可点击刷新；深浅色跟随系统。
+
+```sh
+python3 meter.py serve --thread YOUR_CODEX_THREAD_ID --view panel
+```
+
 ## 图表查看（1.3）
 
 - **会话横向柱状图**：比较已加载会话的可归因小计，点击进入某个会话。不会自动扩大日志读取范围。

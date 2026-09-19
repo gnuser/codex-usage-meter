@@ -186,6 +186,63 @@ class LedgerTests(unittest.TestCase):
             self.assertEqual({c.args[0].name for c in reader.call_args_list},{'7.jsonl'})
             self.assertFalse(ledger.snapshot(limit=10)['pagination']['hasMore'])
 
+    def test_exact_selection_ignores_newer_unrelated_logs_and_messages(self):
+        target = self.home/'sessions/rollout-one.jsonl'
+        self.write(self.head()+[event(tokens()), {'type':'turn_context','payload':{'turn_id':'new-turn'}}], target)
+        self.write(self.head('other')+[event(tokens(900,20))])
+        with patch('usage_meter.ledger.parse', wraps=parse) as reader:
+            result = Ledger(self.home).snapshot('one', exact=True, include_messages=False)
+            self.assertEqual({c.args[0] for c in reader.call_args_list}, {target})
+        self.assertEqual(result['selected']['id'], 'one')
+        self.assertEqual(result['selected']['total']['total_tokens'], 120)
+        self.assertIsNone(result['selected']['turns'][-1]['usage']['total_tokens'])
+        self.assertNotIn('messages', result['selected']['turns'][0])
+        self.assertIsNone(Ledger(self.home).snapshot('missing', exact=True)['selected'])
+        self.write(self.head('wrong')+[event(tokens())], target)
+        self.assertIsNone(Ledger(self.home).snapshot('one', exact=True)['selected'])
+        for identifier in (None, '', '../one', '*'):
+            with self.assertRaises(ValueError): Ledger(self.home).snapshot(identifier, exact=True)
+
+    def test_alternating_panels_reuse_cache_and_reread_modified_logs(self):
+        first = self.home/'sessions/rollout-one.jsonl'
+        second = self.home/'sessions/rollout-two.jsonl'
+        self.write(self.head('one')+[event(tokens())], first)
+        self.write(self.head('two')+[event(tokens())], second)
+        ledger = Ledger(self.home)
+        with patch('usage_meter.ledger.parse', wraps=parse) as reader:
+            for identifier in ('one', 'two', 'one', 'two'):
+                ledger.snapshot(identifier, exact=True, include_messages=False)
+            self.assertEqual(reader.call_count, 2)
+            self.write(self.head('one')+[event(tokens(999, 22))], first)
+            result = ledger.snapshot('one', exact=True, include_messages=False)
+            self.assertEqual(reader.call_count, 3)
+            self.assertEqual(result['selected']['total']['total_tokens'], 1021)
+
+    def test_catalog_only_reads_metadata_and_deduplicates_archives(self):
+        import os
+        first='00000000-0000-0000-0000-000000000001'
+        second='00000000-0000-0000-0000-000000000002'
+        for identifier, stamp in ((first,100),(second,200)):
+            path=self.home/'sessions'/('rollout-'+identifier+'.jsonl')
+            path.write_text('PRIVATE INVALID BODY')
+            os.utime(path,(stamp,stamp))
+        archive=self.home/'archived_sessions';archive.mkdir()
+        copy=archive/('rollout-'+first+'.jsonl');copy.write_text('PRIVATE COPY');os.utime(copy,(50,50))
+        (self.home/'session_index.jsonl').write_text(json.dumps({'id':second,'thread_name':'第二个任务'})+'\n')
+        with patch('usage_meter.ledger.parse',side_effect=AssertionError('Must not parse logs')):
+            result=Ledger(self.home).catalog(1)
+            self.assertEqual(result['sessions'][0]['id'],second)
+            self.assertEqual(result['sessions'][0]['title'],'第二个任务')
+            self.assertTrue(result['hasMore'])
+            self.assertEqual(len(Ledger(self.home).catalog(10)['sessions']),2)
+            self.assertNotIn('PRIVATE',json.dumps(result))
+        import sqlite3
+        with sqlite3.connect(self.home/'state_5.sqlite') as db:
+            db.execute('CREATE TABLE threads(id TEXT, source TEXT, title TEXT)')
+            db.execute('INSERT INTO threads VALUES(?,?,?)',(second,'{"subagent":{"other":"guardian"}}','INTERNAL'))
+        self.assertEqual([s['id'] for s in Ledger(self.home).catalog()['sessions']],[first])
+        with self.assertRaises(ValueError):Ledger(self.home).catalog(101)
+
     def test_invalid_load_limit_rejected(self):
         for value in (0,-1,1001,True,'4'):
             with self.assertRaises(ValueError):Ledger(self.home).snapshot(limit=value)
@@ -294,6 +351,32 @@ class IntegrationTests(unittest.TestCase):
                 self.assertEqual(c.exception.code,403)
                 with self.assertRaises(HTTPError):urlopen(url+'../meter.py')
             finally:s.close()
+
+    def test_panel_routes_and_explicit_binding(self):
+        with tempfile.TemporaryDirectory() as home:
+            root = Path(home)/'sessions'; root.mkdir()
+            rows = [{'type':'session_meta','payload':{'id':'one'}}]
+            for i in range(12):
+                rows.extend([{'type':'turn_context','payload':{'turn_id':str(i)}}, event(tokens((i+1)*100,(i+1)*20), tokens(), str(i))])
+            (root/'rollout-one.jsonl').write_text(''.join(json.dumps(r)+'\n' for r in rows))
+            service = Service(home)
+            try:
+                with self.assertRaises(ValueError): service.dashboard(view='panel')
+                response = dispatch(service, {'method':'tools/call', 'params':{'name':'usage_dashboard','arguments':{'thread_id':'one','view':'panel'}}})
+                url = response['structuredContent']['url']
+                self.assertIn('/panel#', url)
+                base = url.split('/panel#')[0]
+                self.assertIn('活跃会话用量', urlopen(base+'/panel').read().decode())
+                req = lambda path: Request(base+path, headers={'Authorization':'Bearer '+service.token})
+                with self.assertRaises(HTTPError): urlopen(base+'/api/panel?thread=one')
+                with self.assertRaises(HTTPError): urlopen(req('/api/panel'))
+                data = json.load(urlopen(req('/api/panel?thread=one')))
+                self.assertEqual([t['number'] for t in data['selected']['turns']], list(range(3,13)))
+                self.assertNotIn('events', data['selected'])
+                self.assertNotIn('messages', json.dumps(data))
+                detail = json.load(urlopen(req('/api/snapshot?thread=one&scope=thread')))
+                self.assertEqual(detail['selected']['id'], 'one')
+            finally: service.close()
 
     def test_real_mcp_stdio(self):
         root=Path(__file__).resolve().parents[1]

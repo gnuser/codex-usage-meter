@@ -13,6 +13,13 @@
   return [{kind:'uncached',value:fresh},{kind:'cached_input_tokens',value:cache},{kind:'output_tokens',value:out}];
  }
  function cacheRatio(u={}){return valid(u.input_tokens)&&u.input_tokens>0&&valid(u.cached_input_tokens)&&u.cached_input_tokens<=u.input_tokens?u.cached_input_tokens/u.input_tokens:null;}
- const api={metric,segments,cacheRatio};
+ function compact(value){
+  if(!valid(value))return '—';
+  const units=['','K','M','B','T'];let index=0;
+  while(value>=1000&&index<units.length-1){value/=1000;index++;}
+  if(Number(value.toFixed(2))>=1000&&index<units.length-1){value/=1000;index++;}
+  return value.toFixed(2)+units[index];
+ }
+ const api={metric,segments,cacheRatio,compact};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.UsageCharts=api;
 })(globalThis);

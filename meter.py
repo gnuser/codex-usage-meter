@@ -22,14 +22,17 @@ class Service:
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
 
-    def dashboard(self, thread_id=None):
+    def dashboard(self, thread_id=None, view="full"):
+        if view not in ("full", "panel") or (view == "panel" and not thread_id):
+            raise ValueError("Panel requires an explicit thread_id")
         with self.lock:
             if self.server is None:
                 self.server = create_server(self)
                 threading.Thread(target=self.server.serve_forever, daemon=True).start()
         from urllib.parse import urlencode
         fragment = urlencode({'key': self.token, 'thread': thread_id or ''})
-        return f'http://127.0.0.1:{self.server.server_port}/#{fragment}'
+        path = '/panel' if view == 'panel' else '/'
+        return f'http://127.0.0.1:{self.server.server_port}{path}#{fragment}'
 
     def close(self):
         if self.server:
@@ -59,7 +62,10 @@ def create_server(service, port=0):
             if self.headers.get('Host') != expected:
                 return self.reply(403, {'error': 'Invalid Host'})
             url = urlsplit(self.path)
-            assets = {'/': ('index.html', 'text/html; charset=utf-8'),
+            assets = {'/panel': ('panel.html', 'text/html; charset=utf-8'),
+                      '/panel.js': ('panel.js', 'text/javascript; charset=utf-8'),
+                      '/panel.css': ('panel.css', 'text/css; charset=utf-8'),
+                      '/': ('index.html', 'text/html; charset=utf-8'),
                       '/chart-math.js': ('chart-math.js', 'text/javascript; charset=utf-8'),
                       '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                       '/style.css': ('style.css', 'text/css; charset=utf-8')}
@@ -72,10 +78,25 @@ def create_server(service, port=0):
             thread_id = query.get('thread', [None])[0]
             if thread_id and (len(thread_id) > 128 or not all(c.isalnum() or c in '-_' for c in thread_id)):
                 return self.reply(400, {'error': 'Invalid thread id'})
+            if url.path == '/api/threads':
+                try:
+                    return self.reply(200, service.ledger.catalog(int(query.get('limit', ['10'])[0])))
+                except ValueError as exc:
+                    return self.reply(400, {'error': str(exc)})
+            if url.path == '/api/panel':
+                try:
+                    data = service.ledger.snapshot(thread_id, exact=True, include_messages=False)
+                except ValueError as exc:
+                    return self.reply(400, {'error': str(exc)})
+                selected = data['selected']
+                if selected:
+                    selected = {k: selected[k] for k in ('id', 'title', 'total', 'updatedAt', 'warnings')} | {
+                        'turns': [dict(t, number=i + 1) for i, t in enumerate(data['selected']['turns'])][-10:]}
+                return self.reply(200, {'generatedAt': data['generatedAt'], 'selected': selected, 'errors': data['errors']})
             if url.path == '/api/snapshot':
                 try:
                     limit = int(query.get('limit', ['1'])[0])
-                    result = service.ledger.snapshot(thread_id, limit=limit)
+                    result = service.ledger.snapshot(thread_id, limit=limit, exact=query.get('scope') == ['thread'])
                 except ValueError as exc:
                     return self.reply(400, {'error': str(exc)})
                 return self.reply(200, result)
@@ -95,6 +116,7 @@ TOOL_DEFS = [
     {'name': 'usage_dashboard', 'description': 'Open a local interactive usage dashboard. Returns a private loopback URL. Pass actual current thread_id when known.',
      'inputSchema': {'type': 'object', 'properties': {'thread_id': {'type': 'string'}}, 'additionalProperties': False}},
 ]
+TOOL_DEFS[2]['inputSchema']['properties']['view'] = {'type': 'string', 'enum': ['full', 'panel'], 'default': 'full', 'description': 'panel: compact auto-refresh list of sessions active in the last 30 minutes; requires current thread_id as launch context.'}
 for definition in TOOL_DEFS:
     definition['annotations'] = {'readOnlyHint': True, 'destructiveHint': False, 'openWorldHint': False}
 TOOL_DEFS[0]['inputSchema']['properties']['limit'] = {'type': 'integer', 'minimum': 1, 'maximum': 1000, 'default': 1, 'description': 'Start with 1 latest session; increase by 3 only when requested.'}
@@ -114,7 +136,7 @@ def dispatch(service, request):
     if method == 'tools/call':
         args = params.get('arguments') or {}
         thread_id = args.get('thread_id')
-        allowed = {'thread_id', 'limit'} if params.get('name') == 'usage_snapshot' else {'thread_id'}
+        allowed = {'thread_id', 'limit'} if params.get('name') == 'usage_snapshot' else ({'thread_id', 'view'} if params.get('name') == 'usage_dashboard' else {'thread_id'})
         if set(args) - allowed or (thread_id is not None and not isinstance(thread_id, str)):
             raise ValueError('Invalid arguments')
         name = params.get('name')
@@ -124,7 +146,7 @@ def dispatch(service, request):
             result = account_snapshot(service.ledger.home, thread_id)
             result['windows'] = normalize_limits(result['limits'])
         elif name == 'usage_dashboard':
-            result = {'url': service.dashboard(thread_id), 'note': '仅本机访问；MCP 进程退出后链接失效。'}
+            result = {'url': service.dashboard(thread_id, args.get('view', 'full')), 'note': '仅本机访问；MCP 进程退出后链接失效。'}
         else:
             raise ValueError('Unknown tool')
         return {'content': [{'type': 'text', 'text': json.dumps(result, ensure_ascii=False)}],
@@ -164,6 +186,7 @@ def main():
             cmd.add_argument('--limit', type=int, default=1, help='Load latest N sessions (default 1)')
         if command == 'serve':
             cmd.add_argument('--port', type=int, default=0)
+            cmd.add_argument('--view', choices=('full', 'panel'), default='full')
     args = parser.parse_args()
     service = Service(args.home)
     if args.command == 'mcp':
@@ -175,9 +198,12 @@ def main():
         result['windows'] = normalize_limits(result['limits'])
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
+        if args.view == 'panel' and not args.thread:
+            parser.error('--view panel requires --thread')
         service.server = create_server(service, args.port)
         from urllib.parse import urlencode
-        print(f'http://127.0.0.1:{service.server.server_port}/#' + urlencode({'key': service.token, 'thread': args.thread or ''}), flush=True)
+        route = '/panel' if args.view == 'panel' else '/'
+        print(f'http://127.0.0.1:{service.server.server_port}{route}#' + urlencode({'key': service.token, 'thread': args.thread or ''}), flush=True)
         try:
             service.server.serve_forever()
         except KeyboardInterrupt:
