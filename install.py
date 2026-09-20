@@ -19,8 +19,19 @@ def install(source, home):
         raise FileExistsError(f'{target} 已存在；不会覆盖。更新方式见 README。')
     payload = load_validated_marketplace(marketplace, None, 'codex-usage-meter', False)
     # Prepare the complete package before adding it to the marketplace.
-    shutil.copytree(source, target, ignore=shutil.ignore_patterns('__pycache__', '*.pyc', '.DS_Store'))
-    (target / 'bin' / 'launch').chmod(0o755)
+    shutil.copytree(source, target, ignore=shutil.ignore_patterns('__pycache__', '*.pyc', '.DS_Store', '.git', '.venv', 'venv', 'module-cache', '*.app'))
+    from usage_meter.desktop import is_windows
+    if is_windows():
+        config_path = target / '.mcp.json'
+        config = json.loads(config_path.read_text(encoding='utf-8'))
+        config['mcpServers']['usage-meter'].update(command=sys.executable, args=[str(target / 'meter.py'), 'mcp'])
+        config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding='utf-8')
+        hook_path = target / 'hooks/hooks.json'
+        hooks = json.loads(hook_path.read_text(encoding='utf-8'))
+        hooks['hooks']['UserPromptSubmit'][0]['hooks'][0]['command'] = subprocess.list2cmdline([sys.executable, str(target / 'floating.py'), 'hook'])
+        hook_path.write_text(json.dumps(hooks, ensure_ascii=False, indent=2), encoding='utf-8')
+    else:
+        (target / 'bin' / 'launch').chmod(0o755)
     update_marketplace_json(marketplace, None, 'codex-usage-meter', 'AVAILABLE', 'ON_INSTALL', 'Productivity', False)
     return target, marketplace, payload['name']
 

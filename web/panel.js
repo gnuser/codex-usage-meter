@@ -18,7 +18,12 @@ async function refresh(){
   for(const session of sessions){
    const card=node('article',null,'session-card');card.dataset.session=session.id;
    const link=node('a',session.title,'session-title');link.href='codex://threads/'+encodeURIComponent(session.id);link.title='打开对话：'+session.title;
-   if(nativeControl)link.onclick=e=>{e.preventDefault();nativeControl.postMessage({action:'openThread',thread:session.id});};
+   link.onclick=async e=>{
+    if(nativeControl){e.preventDefault();nativeControl.postMessage({action:'openThread',thread:session.id});}
+    else if(window.pywebview?.api?.open_thread){
+     e.preventDefault();try{await window.pywebview.api.open_thread(session.id);}catch(error){status('无法打开对话，请确认已安装 Codex');}
+    }
+   };
    card.append(link);
    try{
     const payload=await request('/api/panel?'+new URLSearchParams({thread:session.id}),controller.signal),item=payload.selected;

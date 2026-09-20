@@ -6,6 +6,7 @@ from unittest.mock import patch
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from floating import select_session, launch
+from usage_meter.desktop import file_lock, is_windows
 from native.install_hook import install
 
 
@@ -20,7 +21,8 @@ class FloatingTests(unittest.TestCase):
             self.assertEqual(json.loads((folder/'selection.json').read_text()),{'thread':'first','submittedAt':10})
             self.assertTrue(select_session({'hook_event_name':'UserPromptSubmit','session_id':'second'},folder,21))
             self.assertEqual(json.loads((folder/'selection.json').read_text())['thread'],'second')
-            self.assertEqual((folder/'selection.json').stat().st_mode & 0o777,0o600)
+            if not is_windows():
+                self.assertEqual((folder/'selection.json').stat().st_mode & 0o777,0o600)
             self.assertNotIn('PRIVATE',(folder/'selection.json').read_text())
 
     def test_invalid_session_does_not_write_or_launch(self):
@@ -38,13 +40,11 @@ class FloatingTests(unittest.TestCase):
                 spawn.assert_not_called()
 
     def test_live_daemon_prevents_duplicate_launch(self):
-        import fcntl
         with tempfile.TemporaryDirectory() as name:
             folder=Path(name)
             binary=folder/'CodexUsageMeter.app/Contents/MacOS/CodexUsageMeter'
             binary.parent.mkdir(parents=True);binary.touch()
-            with (folder/'daemon.lock').open('a') as lock, patch('floating.subprocess.Popen') as spawn:
-                fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            with file_lock(folder/'daemon.lock'), patch('floating.window_command', return_value=['window']), patch('floating.subprocess.Popen') as spawn:
                 launch(folder)
                 spawn.assert_not_called()
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """One shared local window, selected only by UserPromptSubmit hooks."""
 import argparse
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -13,8 +12,21 @@ import time
 ROOT = Path(__file__).resolve().parent
 
 
-def runtime_dir():
-    return Path(os.environ.get('CODEX_USAGE_DATA') or Path.home() / 'Library/Application Support/CodexUsageMeter')
+from usage_meter.desktop import runtime_dir, file_lock, is_windows, python_command, background_options
+
+
+def window_command(folder):
+    if is_windows():
+        try:
+            config = json.loads((folder / 'windows.json').read_text(encoding='utf-8'))
+            executable = Path(config['python'])
+            if executable.is_file():
+                return [python_command(executable), str(ROOT / 'native/windows.py'), str(folder)]
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
+        return None
+    binary = folder / 'CodexUsageMeter.app/Contents/MacOS/CodexUsageMeter'
+    return [str(binary), str(folder)] if binary.is_file() else None
 
 
 def atomic_json(path, value):
@@ -35,8 +47,7 @@ def select_session(payload, folder, stamp=None):
         return False
     stamp = time.time_ns() if stamp is None else stamp
     folder.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (folder / 'selection.lock').open('a') as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with file_lock(folder / 'selection.lock'):
         target = folder / 'selection.json'
         try:
             previous = json.loads(target.read_text())
@@ -51,38 +62,37 @@ def select_session(payload, folder, stamp=None):
 def launch(folder):
     if (folder / 'paused').exists():
         return
-    binary = folder / 'CodexUsageMeter.app/Contents/MacOS/CodexUsageMeter'
-    if not binary.is_file():
-        return  # Installation builds the app once; never compile during a prompt.
-    with (folder / 'daemon.lock').open('a') as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return
+    if not window_command(folder):
+        return  # Build/install once, never during a prompt.
+    try:
+        with file_lock(folder / 'daemon.lock', blocking=False):
+            pass
+    except BlockingIOError:
+        return
     with (folder / 'window.log').open('a') as log:
         os.chmod(folder / 'window.log', 0o600)
-        subprocess.Popen([sys.executable, str(ROOT / 'floating.py'), 'daemon'],
+        subprocess.Popen([python_command(), str(ROOT / 'floating.py'), 'daemon'],
                          stdin=subprocess.DEVNULL, stdout=log, stderr=log,
-                         start_new_session=True, close_fds=True)
+                         close_fds=True, **background_options())
 
 
 def daemon(folder):
     from meter import Service
     folder.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (folder / 'daemon.lock').open('a') as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return
-        if (folder / 'paused').exists():
-            return
-        service = Service()
-        try:
-            atomic_json(folder / 'connection.json', {'url': service.dashboard()})
-            subprocess.run([str(folder / 'CodexUsageMeter.app/Contents/MacOS/CodexUsageMeter'), str(folder)], check=True)
-        finally:
-            service.close()
-            (folder / 'connection.json').unlink(missing_ok=True)
+    try:
+        with file_lock(folder / 'daemon.lock', blocking=False):
+            command = window_command(folder)
+            if (folder / 'paused').exists() or not command:
+                return
+            service = Service()
+            try:
+                atomic_json(folder / 'connection.json', {'url': service.dashboard()})
+                subprocess.run(command, check=True, **background_options())
+            finally:
+                service.close()
+                (folder / 'connection.json').unlink(missing_ok=True)
+    except BlockingIOError:
+        return
 
 
 def main():

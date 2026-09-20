@@ -26,6 +26,32 @@ python3 floating.py show --thread YOUR_CODEX_THREAD_ID
 
 多会话展示参考 [OpenIsland 文档](https://github.com/Octane0411/open-vibe-island/blob/main/docs/hooks.md)，实现独立编写。
 
+## Windows 10 / 11
+
+Windows 版复用相同的极简列表，使用 [pywebview / WebView2](https://pywebview.flowrl.com/guide/web_engine) 承载窗口，[pystray](https://pystray.readthedocs.io/en/latest/usage.html) 提供托盘恢复入口。需要 Windows 原生 Python 3.10+、Microsoft Edge WebView2 Runtime，以及已安装并登录的 Codex。不要从 WSL 启动桌面窗口；WSL 日志也不会自动并入 Windows 本机日志。
+
+在仓库目录的 PowerShell 中执行（推荐独立虚拟环境，无需激活）：
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r native/requirements-windows.txt
+.\.venv\Scripts\python.exe native/build.py
+.\.venv\Scripts\python.exe native/install_hook.py
+.\.venv\Scripts\python.exe floating.py show --thread YOUR_CODEX_THREAD_ID
+```
+
+替换最后一行的真实会话 ID；新 hook 仍需在 Codex `/hooks` 中审查并信任。安装会记住此 Python 环境，后续不要移动或删除 `.venv` 与源码目录。若只需手动打开，可跳过 hook 安装。
+
+- 默认 260×170，可缩放、置顶；最小化保留任务栏入口。关闭按钮收进托盘，双击托盘图标或选择“显示用量”恢复。若托盘初始化失败，关闭会退回任务栏最小化，避免窗口失联。
+- Windows 托盘不能像 macOS 菜单栏一样常驻文本；悬停或打开托盘菜单可查看活跃会话数与最低剩余额度。后台刷新频率与 macOS 相同。
+- 点击会话标题调用系统注册的 `codex://threads/ID` 链接；如果未注册，面板显示打开失败，需先安装 Codex 桌面应用。
+- 运行数据位于 `%LOCALAPPDATA%\CodexUsageMeter`，使用当前 Windows 用户目录权限。`CODEX_USAGE_DATA` 可覆盖路径，不要设置到共享目录。
+- 本机日志默认读取 `%USERPROFILE%\.codex`，可用 `CODEX_HOME` 指定其他路径。额外窗口依赖只用于 Windows，macOS 仍使用原生 Swift 窗口。
+
+如需安装 MCP 插件，请用同一环境执行 `.\.venv\Scripts\python.exe install.py`。安装器会为复制后的 Windows 插件写入 Python 绝对路径和 Windows hook 命令，无需 `sh` 或 `python3` 别名。直接从源码导入插件时，需要自行将 `.mcp.json` 改为该 Python 路径、参数 `["./meter.py", "mcp"]`；Windows hook 推荐使用上述安装器注册。
+
+自动测试涵盖进程互斥、运行路径、插件安装配置、托盘不可用时的恢复行为与链接校验。Windows 真机的托盘操作、焦点与跨应用跳转仍需验收。
+
 ## 浏览器小面板
 
 `usage_dashboard(thread_id=真实会话ID, view="panel")` 返回同一极简活跃会话列表的本机链接，`view="full"` 返回完整仪表。小面板每 5 秒刷新，隐藏时暂停；仅解析最近活跃会话的计数，不返回消息正文。会话目录最多读取最新 100 条元数据。点击标题打开 Codex 对话，顶部剩余额度可点击刷新；深浅色跟随系统。

@@ -5,12 +5,14 @@ import json
 import os
 from pathlib import Path
 import shlex
+import subprocess
 import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from floating import atomic_json
+from usage_meter.desktop import is_windows
 
 
 def install(path):
@@ -19,7 +21,8 @@ def install(path):
     config = json.loads(original) if exists else {}
     if not isinstance(config, dict) or not isinstance(config.get('hooks', {}), dict):
         raise ValueError('Unexpected hooks config shape; no changes made')
-    command = shlex.join([sys.executable, str(ROOT / 'floating.py'), 'hook'])
+    args = [sys.executable, str(ROOT / 'floating.py'), 'hook']
+    command = subprocess.list2cmdline(args) if is_windows() else shlex.join(args)
     groups = config.setdefault('hooks', {}).setdefault('UserPromptSubmit', [])
     if not isinstance(groups, list):
         raise ValueError('Unexpected UserPromptSubmit shape; no changes made')

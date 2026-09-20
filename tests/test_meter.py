@@ -1,4 +1,5 @@
 import io
+from contextlib import closing
 import json
 import subprocess
 import sys
@@ -69,7 +70,7 @@ class LedgerTests(unittest.TestCase):
     def test_title_metadata_and_selected_content(self):
         import sqlite3
         self.write(self.head()+[{'type':'event_msg','payload':{'type':'user_message','message':'原始请求'}},event(tokens())])
-        with sqlite3.connect(self.home/'state_5.sqlite') as db:
+        with closing(sqlite3.connect(self.home/'state_5.sqlite')) as db, db:
             db.execute('CREATE TABLE threads (id TEXT, title TEXT, name TEXT)')
             db.execute('INSERT INTO threads VALUES (?,?,?)',('one','旧标题','重命名标题'))
         r=Ledger(self.home).snapshot('one')
@@ -237,7 +238,7 @@ class LedgerTests(unittest.TestCase):
             self.assertEqual(len(Ledger(self.home).catalog(10)['sessions']),2)
             self.assertNotIn('PRIVATE',json.dumps(result))
         import sqlite3
-        with sqlite3.connect(self.home/'state_5.sqlite') as db:
+        with closing(sqlite3.connect(self.home/'state_5.sqlite')) as db, db:
             db.execute('CREATE TABLE threads(id TEXT, source TEXT, title TEXT)')
             db.execute('INSERT INTO threads VALUES(?,?,?)',(second,'{"subagent":{"other":"guardian"}}','INTERNAL'))
         self.assertEqual([s['id'] for s in Ledger(self.home).catalog()['sessions']],[first])
@@ -316,6 +317,8 @@ class IntegrationTests(unittest.TestCase):
     def test_packaged_mcp_launcher(self):
         root=Path(__file__).resolve().parents[1]
         config=json.loads((root/'.mcp.json').read_text())['mcpServers']['usage-meter']
+        if sys.platform == 'win32':
+            config.update(command=sys.executable, args=[str(root/'meter.py'), 'mcp'])
         p=subprocess.run([config['command'],*config['args']],cwd=root/config['cwd'],
                          input='{"jsonrpc":"2.0","id":1,"method":"tools/list"}\n',
                          text=True,capture_output=True,timeout=5)
