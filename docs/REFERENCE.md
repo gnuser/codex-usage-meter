@@ -14,11 +14,11 @@ The interface defaults to English. Conversation titles and messages retain their
 
 - [Installation guide](INSTALL.md): macOS, Windows, and optional integrations.
 - [Usage guide](USAGE.md): controls, numbers, and troubleshooting.
-- [29-second English overview](media/getting-started.mp4) · [English subtitles](media/getting-started.srt).
+- [29-second English overview](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](media/getting-started.srt).
 
-[![Watch the product overview](media/getting-started.png)](media/getting-started.mp4)
+[![Watch the product overview](media/getting-started.png)](https://gnuser.github.io/codex-usage-meter/)
 
-The video covers checking usage, expanding model details, and hiding the window. It uses an authorized AI voice clone, illustrative UI, and sample data. Download the MP4 if GitHub does not play it inline. Original recordings and voice models are not included.
+The video covers checking usage, expanding model details, and hiding the window. It uses an authorized AI voice clone, illustrative UI, and sample data. The player also offers an MP4 download. Original recordings and voice models are not included.
 
 ## Features
 

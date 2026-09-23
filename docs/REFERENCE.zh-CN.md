@@ -14,11 +14,11 @@
 
 - **第一次安装**：[分平台安装指南](INSTALL.zh-CN.md)
 - **已经装好**：[使用指南与快速排障](USAGE.zh-CN.md)
-- **视频讲解**：[约 30 秒英文讲解](media/getting-started.mp4) · [下载字幕](media/getting-started.srt)
+- **视频讲解**：[约 30 秒英文讲解](https://gnuser.github.io/codex-usage-meter/) · [下载字幕](media/getting-started.srt)
 
-[![安装与使用讲解视频](media/getting-started.png)](media/getting-started.mp4)
+[![安装与使用讲解视频](media/getting-started.png)](https://gnuser.github.io/codex-usage-meter/)
 
-视频只讲查看用量、展开模型和收起窗口；采用经录音本人授权的 AI 克隆英文旁白和简短英文字幕，使用示意界面和示例数据。GitHub 若不直接播放，可下载 MP4 后观看；完整可复制命令见安装指南。
+视频只讲查看用量、展开模型和收起窗口；采用经录音本人授权的 AI 克隆英文旁白和简短英文字幕，使用示意界面和示例数据。播放页也提供 MP4 下载；完整可复制命令见安装指南。
 
 ## 能做什么
 

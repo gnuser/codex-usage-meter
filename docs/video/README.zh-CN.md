@@ -2,7 +2,7 @@
 
 [English](README.md) | **简体中文**
 
-成片：[getting-started.mp4](../media/getting-started.mp4) · [英文字幕](../media/getting-started.srt)
+成片：[getting-started.mp4](https://gnuser.github.io/codex-usage-meter/) · [英文字幕](../media/getting-started.srt)
 
 - 约 29 秒，1280×720、24 fps，H.264 视频和 AAC 英文音轨。
 - 只讲三个重点：查看用量、展开模型、收起窗口。

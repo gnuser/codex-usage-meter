@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex Usage Meter · Demo</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #10191e; color: #f1f6f7; }
+    body { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
+    h1 { font-size: clamp(24px, 4vw, 36px); margin: 0 0 8px; }
+    p { color: #aebfc8; line-height: 1.6; }
+    video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; margin: 24px 0; }
+    nav { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+    a { color: #8ae1c0; text-underline-offset: 4px; }
+    a:focus-visible { outline: 2px solid #8ae1c0; outline-offset: 5px; }
+    small { display: block; margin-top: 24px; color: #aebfc8; }
+  </style>
+</head>
+<body>
+  <h1>Codex Usage Meter</h1>
+  <p>A 29-second overview. Press play to watch with sound.</p>
+  <video controls playsinline preload="metadata" poster="media/getting-started.png" aria-label="Codex Usage Meter product overview">
+    <source src="media/getting-started.mp4" type="video/mp4">
+    <track kind="captions" src="media/getting-started.vtt" srclang="en" label="English">
+    Your browser cannot play this video. <a href="media/getting-started.mp4" download>Download the MP4</a>.
+  </video>
+  <nav aria-label="Video links">
+    <a href="media/getting-started.mp4" download>Download MP4</a>
+    <a href="https://github.com/gnuser/codex-usage-meter#readme">Install</a>
+    <a href="https://github.com/gnuser/codex-usage-meter/blob/main/README.zh-CN.md" lang="zh-CN">中文说明</a>
+  </nav>
+  <small>Authorized AI-cloned narration · Sample data · Unofficial project</small>
+</body>
+</html>
