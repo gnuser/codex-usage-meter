@@ -1,85 +1,87 @@
-# 使用指南
+# Usage guide
 
-[安装指南](INSTALL.md) · [返回首页](../README.md) · [30 秒重点演示](media/getting-started.mp4)
+**English** | [简体中文](USAGE.zh-CN.md)
 
-## 小窗怎么看
+[Installation](INSTALL.md) · [Home](../README.md) · [Video overview](media/getting-started.mp4)
 
-界面默认英文。下面是示意数据，不是你的实际用量：
+## Read the window
+
+The interface defaults to English. This example uses sample data:
 
 ```text
 Week 40% · Reset 4d 0h
 Active 2                         Week left 40.00%
-修改登录页面                   最近 10 轮柱状图
+Update login page                Last 10 turns
 Turn 24.50K · Total 1.20M
-In 23.80K · Out 700.00                 ▸
-Tibo · No clear reset signal                          ▸
+In 23.80K · Out 700.00                         ▸
+Tibo · No clear reset signal                   ▸
 Resets 3 · Credit expires in 6d 0h
 ```
 
-| 位置 | 含义与操作 |
+| Item | Meaning / action |
 | --- | --- |
-| 标题栏 | 周额度剩余百分比，以及周额度多久后自动重置 |
-| 顶部活跃数 | 最近 30 分钟日志有更新的会话数；点击刷新 |
-| 顶部额度百分比 | 点击展开／收起详细重置时间 |
-| 会话标题 | 点击打开对应 Codex 对话 |
-| 本轮／累计 | 当前用户轮次用量，以及日志最新会话累计快照 |
-| 输入／输出 | 当前轮次的 input / output tokens |
-| 会话右侧 ▸ | 展开本会话各模型累计输入／输出；再次点击收起 |
-| 最近 10 轮柱状图 | 每个会话独立缩放；比较不同会话时看数值 |
-| Tibo 行 | 展开最近三条主题帖、原文链接和重置信号 |
-| 底部状态栏 | 剩余手动重置次数，以及最近一张可用重置资格多久后过期 |
+| Title bar | Remaining weekly allowance and time until automatic reset |
+| Active count | Conversations updated in the last 30 minutes; click to refresh |
+| Allowance percentage | Click to show or hide reset details |
+| Conversation title | Click to open that conversation in Codex |
+| Turn / Total | Current user turn and latest cumulative conversation snapshot |
+| In / Out | Input and output tokens for the current turn |
+| Triangle ▸ | Expand cumulative usage by model; click again to collapse |
+| Last ten bars | Turn usage, scaled independently per conversation; compare numbers across conversations |
+| Tibo row | Expand three original posts, source links, and reset signals |
+| Footer | Available manual resets and time until the earliest available reset credit expires |
 
-**周额度自动重置**与**手动重置资格到期**是不同时间。后者表示资格将过期，不代表届时额度会自动恢复。本工具不执行手动重置。
+**Weekly automatic reset** and **manual reset credit expiry** are different deadlines. A credit expiring does not mean your allowance will automatically recover. This tool does not perform manual resets.
 
-## 日常操作
+## Everyday controls
 
-- **打开与定位**：默认尝试靠近 Codex 窗口右下角，可拖动位置和调整宽度。
-- **展开与收起明细**：默认折叠；展开后窗口自动增高，收起后缩回。高度最多 480 像素或屏幕可用高度的 60%，超出部分滚动查看。
-- **切换会话**：点击列表中的标题即可。仅点击 Codex 侧栏不会更新本工具的“当前会话”选择；列表依据近期日志更新显示。
-- **macOS 收起／找回**：点标题栏缩放、最小化或关闭按钮收进菜单栏；点菜单栏摘要或 Dock 的“Codex Usage”恢复。
-- **Windows 收起／找回**：关闭按钮收进托盘，双击托盘图标恢复；最小化后从任务栏找回。托盘图标可能藏在折叠菜单中。
-- **暂停**：菜单栏／托盘右键选择“Quit and pause auto-open”。恢复方法见 [手动打开](INSTALL.md#不想配置自动启动手动打开)。
+- **Position:** the window initially tries to sit near Codex's bottom-right. Drag to move or resize it.
+- **Details:** collapsed by default. Expanding increases height; collapsing shrinks it. Height is capped at 480 pixels or 60% of available screen height; excess content scrolls.
+- **Switch conversations:** click a title in the list. Clicking the Codex sidebar alone does not update a foreground-conversation selection here; the list follows recent log updates.
+- **Hide / restore on macOS:** zoom, minimize, or close hides the window to the menu bar. Click its menu bar summary or **Codex Usage** in the Dock to restore it.
+- **Hide / restore on Windows:** close hides to the tray; double-click the tray icon to restore. A minimized window remains on the taskbar. Check hidden tray icons if needed.
+- **Pause:** choose **Quit and pause auto-open** in the menu bar / tray context menu. Resume with [manual opening](INSTALL.md#open-manually).
 
-窗口收起后，新消息不会强行把它展开。会话列表约每 5 秒更新，官方额度约每 5 分钟更新。正在生成的回复尚未写入日志时，用量可能延迟出现。
+New messages do not force a hidden window open. Conversations refresh about every five seconds, and account allowance about every five minutes. Usage can lag while a reply is still being written to the log.
 
-## 数字怎么理解
+## Understand the numbers
 
-- `K`、`M`、`B` 分别表示千、百万、十亿，保留两位小数。
-- **token 不等于订阅额度**，不能从周额度百分比算出剩余 token 或费用。
-- `—` / “未记录”是缺少数据，不是零。
-- “活跃”表示最近有日志更新，不代表正在运行，也不是前台窗口标识。
-- 模型明细只显示日志可归因的模型。日志若只写 `jev/auto`，无法由此确定后端实际用了哪些模型。
-- 模型累计与会话累计可能范围不同，例如日志压缩或恢复导致计数变化。不要将它们重复相加。
+- `K`, `M`, and `B` mean thousand, million, and billion, with two decimal places.
+- **Tokens are not subscription allowance.** Weekly percentages cannot be converted into remaining tokens or costs.
+- `—` / **Not recorded** means missing data, not zero.
+- **Active** means a recent log update, not necessarily a running or foreground conversation.
+- Model details use attributable model names from the logs. If a log only says `jev/auto`, the actual backend model cannot be inferred.
+- Model totals and conversation totals can cover different scopes, such as after log compaction or restoration. Do not add them together.
 
-## 查看历史与完整明细
+## History and full details
 
-运行 `python3 meter.py serve`（Windows 使用 `py -3`），打开终端打印的链接。
+Run `python3 meter.py serve` (`py -3 meter.py serve` on Windows), then open the printed URL.
 
-初次只加载最近一个会话，点击“Load 3 more conversations”继续查看。可切换会话、查看轮次与模型明细、按需展开正文，并导出 JSON。日志自动刷新默认关闭，可在页面开启。
+Initially, one recent conversation is loaded. Click **Load 3 more conversations** for more. Switch conversations, inspect turns and models, expand recorded messages, or export JSON. Log auto-refresh is off by default and can be enabled on the page.
 
-完整仪表与 JSON 导出可能包含对话正文和账号标识。分享前检查内容；不要分享带临时密钥的地址。
+The full dashboard and exports may contain message bodies and account identifiers. Check before sharing, and never share a URL containing a temporary key.
 
-## 使用 Tibo 监控
+## Tibo monitor
 
-先完成 [Chrome 连接](INSTALL.md#可选连接-tibo-主题帖监控)。点击 Tibo 行可以查看：
+Complete [Chrome setup](INSTALL.md#optional-tibo-monitor), then click the Tibo row to see:
 
-- 最近三条主题帖的正文、发布时间与原文链接；不读取回复或转发。
-- 最近成功更新时间，以及读取失败的原因。
-- “作者预告”“作者称已重置／正在发放”“可能信号”或“无明确重置信号”。
+- The latest three original posts, publication times, and source links; no replies or reposts.
+- Last successful update time and any read failure.
+- **Author announces reset**, **Author reports reset or rollout**, **Possible signal · Unconfirmed**, or **No clear reset signal**.
 
-这是原文规则判断，不提供概率。`tomorrow` 等时间保留原文，不擅自换算具体日期。公开发言不证明你的账号已收到额度，仍以账号额度为准。
+These are text rules, not probabilities. Relative phrases such as “tomorrow” remain quoted; no date is invented. Public posts do not confirm that your account received allowance. Check the official account data.
 
-读取不完整、登录过期、长文截断或数据过期时暂停预测。Chrome 必须运行，专用标签必须保留；睡眠时不会准点刷新。用量服务重启后，在扩展重新配对。
+Incomplete reads, expired sign-in, truncated posts, or stale data suspend predictions. Keep Chrome and the dedicated tab open. Sleeping devices do not refresh on schedule. Pair again after restarting the usage service.
 
-## 快速排障
+## Quick troubleshooting
 
-| 现象 | 先检查什么 |
+| Symptom | First check |
 | --- | --- |
-| 窗口找不到 | 菜单栏、Dock、Windows 托盘折叠菜单；仍无入口就手动 `show` |
-| 没有自动打开 | 桌面窗口已安装、hook 已信任；在新会话发送消息 |
-| 会话列表为空 | 最近 30 分钟是否有日志更新；历史记录用完整仪表 |
-| token 正常，额度 `—` | Codex CLI 是否可运行且已登录；等待额度刷新 |
-| Tibo 一直待更新 | Chrome 登录、专用标签、扩展连接状态；确认配对的是悬浮窗后台 |
-| 服务重启后连接失败 | 旧端口和密钥已失效，获取新地址 |
+| Missing window | Menu bar, Dock, or hidden tray icons; then manually run `show` |
+| No automatic opening | Desktop installed, hook trusted; send a message in a new conversation |
+| Empty list | Any log updates in the last 30 minutes? Use the full dashboard for history |
+| Tokens work; allowance is `—` | Codex CLI availability and sign-in; wait for allowance refresh |
+| Tibo stays pending | Chrome sign-in, dedicated tab, extension status, and pairing with the floating window's service |
+| Connection fails after restart | The old port/key expired; get the new URL |
 
-更完整的配置、更新和卸载方法见 [README](../README.md)。
+See the [README](../README.md) for configuration, updates, and uninstallation.

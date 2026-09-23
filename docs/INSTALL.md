@@ -1,54 +1,56 @@
-# 安装指南
+# Installation
 
-[返回首页](../README.md) · [使用指南](USAGE.md) · [30 秒重点演示](media/getting-started.mp4)
+**English** | [简体中文](INSTALL.zh-CN.md)
 
-想先试用，选浏览器仪表；想常驻查看，安装悬浮窗。**这两种方式都不需要先安装 Codex 插件。** 插件和 Tibo 监控均可稍后添加。
+[Home](../README.md) · [Usage guide](USAGE.md) · [Video overview](media/getting-started.mp4)
 
-## 安装前准备
+Try the browser dashboard first, or install the floating window for ongoing use. **Neither requires installing the Codex plugin.** The plugin and Tibo monitor are optional.
 
-| 使用方式 | 需要什么 |
+## Requirements
+
+| Setup | Requirements |
 | --- | --- |
-| 浏览器仪表 | Python 3.10+；本机已有 Codex 会话日志 |
-| macOS 悬浮窗 | 上述条件，加 Xcode Command Line Tools |
-| Windows 悬浮窗 | Windows 10/11 原生 Python、WebView2 Runtime，以及下文依赖 |
-| 官方账号额度 | 本机可运行且已登录的 Codex CLI |
-| 点击会话跳转 | Codex 桌面应用 |
-| Tibo 监控（可选） | 已登录 X 的 Chrome，另装本仓库扩展 |
+| Browser dashboard | Python 3.10+ and local Codex conversation logs |
+| macOS floating window | The above, plus Xcode Command Line Tools |
+| Windows floating window | Native Windows 10/11 Python, WebView2 Runtime, and the dependencies below |
+| Account allowance | A working, signed-in Codex CLI |
+| Conversation links | Codex desktop app |
+| Optional Tibo monitor | Chrome signed into X, plus this repository's extension |
 
-Git 用于下载源码；也可以在 [GitHub 仓库](https://github.com/gnuser/codex-usage-meter) 选择 **Code → Download ZIP**，解压后进入目录。
+Download with Git, or choose **Code → Download ZIP** on [GitHub](https://github.com/gnuser/codex-usage-meter) and extract it:
 
 ```sh
 git clone https://github.com/gnuser/codex-usage-meter.git
 cd codex-usage-meter
 ```
 
-**后续命令都在项目目录执行。保留这个目录，不要安装完就删除或移动。**
+**Run the following commands from this directory. Keep it in place after installation.**
 
-## 方式一：一分钟体验浏览器仪表
+## Browser dashboard
 
-macOS：
+macOS:
 
 ```sh
 python3 meter.py serve
 ```
 
-Windows PowerShell：
+Windows PowerShell:
 
 ```powershell
 py -3 meter.py serve
 ```
 
-打开终端打印的完整链接。保持终端运行；按 `Ctrl+C` 停止。第一次只加载最近一个会话，可在页面继续加载历史会话。
+Open the complete URL printed in the terminal. Leave the terminal running; press `Ctrl+C` to stop. Initially, only the latest conversation is loaded; load more from the page.
 
-成功标志：看到仪表页面及本机已有会话。若没有历史日志，先在 Codex 中完成一轮对话。
+You should see the dashboard and existing local conversations. If there are no logs yet, complete a conversation turn in Codex first.
 
-链接的 `#key=…` 是临时访问密钥，**不要截图分享或发给他人**。服务重启后使用新链接。
+The URL's `#key=…` is a temporary access key. **Do not share it or include it in screenshots.** Use the new URL after restarting the service.
 
-## 方式二：安装悬浮窗
+## Floating window
 
 ### macOS
 
-检查环境：
+Check your environment:
 
 ```sh
 python3 --version
@@ -56,22 +58,22 @@ codex --version
 xcode-select -p
 ```
 
-若没有编译工具，运行 `xcode-select --install`，在系统窗口中完成安装后再继续。
+If build tools are missing, run `xcode-select --install` and finish the system installation first.
 
-编译并注册自动启动：
+Build the window and register automatic opening:
 
 ```sh
 python3 native/build.py
 python3 native/install_hook.py
 ```
 
-在 Codex CLI 输入 `/hooks`，审查并信任指向本项目 `floating.py hook` 的新增条目。然后新建会话，发送一条消息。
+In Codex CLI, open `/hooks`, review and trust the new entry pointing to this project's `floating.py hook`. Then start a new conversation and send a message.
 
-成功标志：小窗打开并显示最近活跃会话。应用安装在 `~/Library/Application Support/CodexUsageMeter/CodexUsageMeter.app`，但仍依赖源码目录中的后台脚本。
+The window should open with recently active conversations. The app is installed at `~/Library/Application Support/CodexUsageMeter/CodexUsageMeter.app`; its background scripts still depend on the source directory.
 
 ### Windows 10 / 11
 
-在 **原生 PowerShell** 中执行，不要使用 WSL。先确认已安装 [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
+Use **native PowerShell**, not WSL. Install [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) if it is missing.
 
 ```powershell
 py -3 -m venv .venv
@@ -80,70 +82,70 @@ py -3 -m venv .venv
 .\.venv\Scripts\python.exe native/install_hook.py
 ```
 
-不需要激活虚拟环境。不要删除 `.venv`。
+You do not need to activate the virtual environment. Keep `.venv` in place.
 
-在 Codex CLI 的 `/hooks` 中信任新增 hook，再新建会话并发送消息。成功后会看到小窗，关闭按钮会把它收进系统托盘。
+Trust the new hook in Codex CLI's `/hooks`, then send a message in a new conversation. The window should appear; its close button hides it in the system tray.
 
-### 不想配置自动启动：手动打开
+### Open manually
 
-先列出最近会话，复制目标会话行开头的 ID：
+To skip automatic opening, first list recent conversations and copy the ID at the start of the desired row:
 
 ```sh
 python3 -c "from usage_meter.ledger import Ledger; print('\n'.join(s['id']+'  '+s['title'] for s in Ledger().catalog(10)['sessions']))"
 python3 floating.py show --thread YOUR_CODEX_THREAD_ID
 ```
 
-Windows 将以上 `python3` 换成 `.\.venv\Scripts\python.exe`。将 `YOUR_CODEX_THREAD_ID` 替换为实际 ID。
+On Windows, replace `python3` with `.\.venv\Scripts\python.exe`. Replace `YOUR_CODEX_THREAD_ID` with an actual ID.
 
-此命令也可用于找回窗口或恢复已暂停的自动启动。小窗仍展示所有最近 30 分钟活跃会话，不只显示指定 ID。
+This also restores a missing window or resumes paused automatic opening. The window still shows all conversations active in the last 30 minutes, not just the supplied ID.
 
-## 可选：作为 Codex 插件使用
+## Optional Codex plugin
 
-如果希望在 Codex 中直接说“查看本次会话用量”，再安装插件：
+Install the plugin if you want to ask Codex directly about conversation usage.
 
-macOS：
+macOS:
 
 ```sh
 python3 install.py --enable
 ```
 
-Windows：
+Windows:
 
 ```powershell
 .\.venv\Scripts\python.exe install.py --enable
 ```
 
-安装器将插件复制到 `~/plugins/codex-usage-meter`，登记到个人市场，并尝试启用。启用后新建 Codex 任务，输入“查看本次会话 token 用量”。
+The installer copies the plugin to `~/plugins/codex-usage-meter`, registers it in your personal marketplace, and attempts to enable it. Create a new Codex task and ask: “Show token usage for this conversation.”
 
-插件已带 hook；如果采用插件 hook，就跳过前面的 `native/install_hook.py`，避免重复注册。桌面窗口仍需安装，hook 仍需信任。已注册用户级 hook 时，只移除指向本项目的重复条目，保留其他配置。
+The plugin includes a hook. If using that hook, skip `native/install_hook.py` above to avoid duplicate registration. You still need the desktop window installed and the hook trusted. If you already registered a user-level hook, remove only this project's duplicate entry.
 
-如提示插件目录已存在，请按 [更新与卸载](../README.md#更新与卸载) 操作，安装器不会覆盖已有目录。
+The installer does not overwrite an existing plugin directory. Follow [Update and uninstall](../README.md#update-and-uninstall) if it already exists.
 
-## 可选：连接 Tibo 主题帖监控
+## Optional Tibo monitor
 
-1. 在 Chrome 登录 X，确认能打开 [Tibo 的主页](https://x.com/thsottiaux)。
-2. 打开 `chrome://extensions`，启用开发者模式。
-3. 点击“加载已解压的扩展程序”，选择源码中的 `browser-extension` 文件夹。
-4. 保持悬浮窗运行，获取**悬浮窗后台**的连接地址：
+1. Sign into X in Chrome and confirm [Tibo's profile](https://x.com/thsottiaux) opens.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Select **Load unpacked** and choose this repository's `browser-extension` directory.
+4. With the floating window running, get its **background service** URL:
 
    ```sh
    python3 -c "import json; from floating import runtime_dir; print(json.loads((runtime_dir()/'connection.json').read_text())['url'])"
    ```
 
-   Windows 将 `python3` 换成 `.\.venv\Scripts\python.exe`。如果提示文件不存在，先打开悬浮窗。
+   On Windows, replace `python3` with `.\.venv\Scripts\python.exe`. If the file does not exist, open the floating window first.
 
-5. 点击 Chrome 中的 Tibo 扩展图标，粘贴完整地址，点击“Connect and start”。
-6. 等待扩展显示“Updated”，再展开悬浮窗底部的 Tibo 行查看。面板最多约 30 秒后反映新数据。
+5. Click the Chrome extension icon, paste the complete URL, and choose **Connect and start**.
+6. Wait for **Updated**, then expand the Tibo row in the window. New data may take about 30 seconds to appear in the panel.
 
-请使用上述悬浮窗后台地址；单独运行 `meter.py serve` 会启动另一个服务，配对到它不会更新现有悬浮窗。
+Use the floating window's URL above. Running `meter.py serve` separately starts a different service; pairing with it will not update the existing floating window.
 
-扩展每 30 分钟刷新，也可点击“Refresh now”。保留专用 X 标签并让 Chrome 运行。重启用量服务后需要重新配对；不要分享连接地址。只有最近三条主题帖会进入判断，回复、自回复和转发不计入。
+The extension refreshes every 30 minutes; **Refresh now** runs it manually. Keep Chrome and the dedicated X tab open. Pair again after restarting the usage service. Do not share the connection URL. Only the latest three original posts are considered; replies, self-replies, and reposts are excluded.
 
-## 安装后检查
+## Verify installation
 
-- 在新会话发消息，小窗出现；最近 30 分钟没有更新的会话不会列出。
-- 点击会话右侧三角按钮，能展开模型输入／输出用量，窗口高度随之变化。
-- 收起小窗后，可从菜单栏或托盘找回。
-- 额度暂时为 `—` 时，先确认 Codex CLI 已登录；这不影响本地 token 统计。
+- Send a message in a new conversation: the window appears. Conversations without updates in the last 30 minutes are excluded.
+- Click a conversation's triangle to expand model input/output usage; the height adjusts.
+- Hide the window and restore it from the menu bar or tray.
+- If allowance is `—`, check Codex CLI sign-in. Local token accounting works independently.
 
-下一步：[使用指南](USAGE.md)。排障、更新和卸载见 [README](../README.md)。
+Next: [Usage guide](USAGE.md). See the [README](../README.md) for configuration, updates, and uninstallation.
