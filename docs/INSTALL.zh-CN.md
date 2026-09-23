@@ -4,6 +4,14 @@
 
 需要 **Python 3.10+**、Git 和 Codex。查询账号额度还需登录 Codex CLI。
 
+## 交给 Codex 安装
+
+直接发送：
+
+> 请按照这个 skill 帮我安装 Codex Usage Meter：https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
+
+它会完成系统配置并尝试打开小窗。自动启动只需在 `/hooks` 中确认信任一次。下面是可选的手动步骤。
+
 ## 1. 下载
 
 ```sh

@@ -4,6 +4,14 @@
 
 You need **Python 3.10+**, Git, and Codex. Sign into Codex CLI to see account allowance.
 
+## Let Codex install it
+
+Send this message to Codex:
+
+> Install Codex Usage Meter by following this skill: https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
+
+It handles the platform setup and first launch. Approve the message hook once in `/hooks` for automatic opening. The manual steps below are an alternative.
+
 ## 1. Download
 
 ```sh

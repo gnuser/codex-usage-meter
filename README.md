@@ -8,19 +8,15 @@ A small floating window for Codex usage. See recent conversations, input/output 
 
 [Watch the demo](docs/media/getting-started.mp4) · English AI-cloned narration, used with permission; sample data.
 
-## Install
+## Install with one message
 
-[**macOS or Windows setup →**](docs/INSTALL.md)
+Paste this into Codex:
 
-Want to try it in a browser first? With Python 3.10+ installed:
+> Install Codex Usage Meter by following this skill: https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
 
-```sh
-git clone https://github.com/gnuser/codex-usage-meter.git
-cd codex-usage-meter
-python3 meter.py serve
-```
+Codex handles setup for your OS. For automatic opening, review and trust the hook once in `/hooks`.
 
-On Windows, use `py -3 meter.py serve`. Open the URL printed in the terminal and keep the terminal running.
+[Manual installation](docs/INSTALL.md)
 
 ## Use
 
