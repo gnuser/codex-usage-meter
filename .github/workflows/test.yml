@@ -22,6 +22,10 @@ jobs:
       - run: python -m unittest discover -s tests
       - run: node tests/test_charts.js
       - run: node tests/test_panel.js
+      - run: node tests/test_panel_size.js
+      - run: node tests/test_tibo.js
+      - run: node tests/test_tibo_timeline.js
+      - run: node tests/test_tibo_background.js
       - run: node tests/test_quota_summary.js
       - run: node --check web/panel.js
       - if: runner.os == 'Windows'

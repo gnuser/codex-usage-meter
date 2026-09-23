@@ -72,6 +72,41 @@ class WindowsTests(unittest.TestCase):
         with self.assertRaises(ValueError): bridge.set_title('untrusted')
         bridge._window.set_title.assert_called_once()
 
+    def test_auto_height_keeps_bottom_and_checks_origin(self):
+        bridge = Bridge('http://127.0.0.1:1/panel#key=x', opener=Mock())
+        window = bridge._window = Mock(width=240, height=200, x=800, y=600)
+        window.get_current_url.return_value = bridge._panel_url
+        bridge.fit_height(300, 170, 900)
+        window.resize.assert_called_with(240, 330)
+        window.move.assert_called_with(800, 470)
+        bridge.fit_height(50, 170, 900)
+        window.resize.assert_called_with(240, 100)
+        bridge.fit_height(9000, 170, 900)
+        window.resize.assert_called_with(240, 480)
+        window.y = 10
+        bridge.fit_height(400, 170, 900)
+        window.move.assert_called_with(800, 0)
+        window.y = -890
+        bridge.fit_height(400, 170, 900, -900)
+        window.move.assert_called_with(800, -900)
+        for value in (None, True, -1, float('nan')):
+            with self.assertRaises(ValueError): bridge.fit_height(value, 170, 900)
+        window.get_current_url.return_value = 'https://example.com'
+        with self.assertRaises(ValueError): bridge.fit_height(100, 170, 900)
+
+    def test_public_post_bridge_restricts_destination(self):
+        opener = Mock()
+        bridge = Bridge('http://127.0.0.1:1/panel#key=x', opener=opener)
+        bridge._window = Mock()
+        bridge._window.get_current_url.return_value = bridge._panel_url
+        self.assertTrue(bridge.open_post('https://x.com/thsottiaux/status/123'))
+        for value in ('https://evil.example/', 'https://x.com/other/status/123',
+                      'https://x.com/thsottiaux/status/123?redirect=evil', None):
+            with self.assertRaises(ValueError): bridge.open_post(value)
+        bridge._window.get_current_url.return_value = 'https://evil.example/'
+        with self.assertRaises(ValueError): bridge.open_post('https://x.com/thsottiaux/status/123')
+        opener.assert_called_once()
+
     def test_placement_respects_work_area(self):
         from native.window_position import bottom_right
         self.assertEqual(bottom_right((0, 0, 1000, 800), (0, 0, 1000, 760), 260, 170), (728, 590))

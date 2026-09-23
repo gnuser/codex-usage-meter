@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from usage_meter.account import account_snapshot
+from usage_meter.browser_posts import BrowserPosts
 from usage_meter.ledger import Ledger, normalize_limits
 
 ROOT = Path(__file__).resolve().parent
@@ -18,6 +19,8 @@ ROOT = Path(__file__).resolve().parent
 class Service:
     def __init__(self, home=None):
         self.ledger = Ledger(home)
+        self.public_posts = BrowserPosts()
+        self.browser_token = None
         self.server = None
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
@@ -35,6 +38,7 @@ class Service:
         return f'http://127.0.0.1:{self.server.server_port}{path}#{fragment}'
 
     def close(self):
+        self.public_posts.close()
         if self.server:
             self.server.shutdown()
             self.server.server_close()
@@ -57,6 +61,30 @@ def create_server(service, port=0):
             self.end_headers()
             self.wfile.write(body)
 
+        def do_POST(self):
+            if self.headers.get('Host') != f'127.0.0.1:{self.server.server_port}':
+                return self.reply(403, {'error': 'Invalid Host'})
+            path = urlsplit(self.path).path
+            if path not in ('/api/tibo/pair', '/api/tibo/ingest'):
+                return self.reply(404, {'error': 'Not found'})
+            token = service.token if path.endswith('/pair') else service.browser_token
+            if not token or not secrets.compare_digest(self.headers.get('Authorization', ''), 'Bearer ' + token):
+                return self.reply(401, {'error': 'Invalid key'})
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 262144 or self.headers.get('Transfer-Encoding'):
+                    raise ValueError('Invalid body size')
+                self.connection.settimeout(5)
+                data = json.loads(self.rfile.read(length))
+                if path.endswith('/pair'):
+                    with service.lock:
+                        service.browser_token = secrets.token_urlsafe(32)
+                        return self.reply(200, {'token': service.browser_token})
+                service.public_posts.ingest(data)
+                return self.reply(200, {'ok': True})
+            except (ValueError, OSError):
+                return self.reply(400, {'error': 'Invalid public-post payload'})
+
         def do_GET(self):
             expected = f'127.0.0.1:{self.server.server_port}'
             if self.headers.get('Host') != expected:
@@ -64,7 +92,9 @@ def create_server(service, port=0):
             url = urlsplit(self.path)
             assets = {'/panel': ('panel.html', 'text/html; charset=utf-8'),
                       '/panel.js': ('panel.js', 'text/javascript; charset=utf-8'),
+                      '/panel-size.js': ('panel-size.js', 'text/javascript; charset=utf-8'),
                       '/panel.css': ('panel.css', 'text/css; charset=utf-8'),
+                      '/tibo.js': ('tibo.js', 'text/javascript; charset=utf-8'),
                       '/quota-summary.js': ('quota-summary.js', 'text/javascript; charset=utf-8'),
                       '/': ('index.html', 'text/html; charset=utf-8'),
                       '/chart-math.js': ('chart-math.js', 'text/javascript; charset=utf-8'),
@@ -79,6 +109,8 @@ def create_server(service, port=0):
             thread_id = query.get('thread', [None])[0]
             if thread_id and (len(thread_id) > 128 or not all(c.isalnum() or c in '-_' for c in thread_id)):
                 return self.reply(400, {'error': 'Invalid thread id'})
+            if url.path == '/api/tibo':
+                return self.reply(200, service.public_posts.snapshot())
             if url.path == '/api/threads':
                 try:
                     return self.reply(200, service.ledger.catalog(int(query.get('limit', ['10'])[0])))

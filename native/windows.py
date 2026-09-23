@@ -58,6 +58,29 @@ class Bridge:
         self._window.set_title(title)
         return True
 
+    def fit_height(self, height, viewport_height, available_height, available_top=0):
+        values = (height, viewport_height, available_height)
+        if any(type(v) not in (int, float) or not math.isfinite(v) or v <= 0 for v in values):
+            raise ValueError('Invalid window dimensions')
+        if type(available_top) not in (int, float) or not math.isfinite(available_top):
+            raise ValueError('Invalid screen origin')
+        self._require_local_page()
+        window = self._window
+        chrome = max(0, min(100, window.height - viewport_height))
+        target = max(100, min(480, available_height * 0.6, math.ceil(height + chrome)))
+        if abs(window.height - target) >= 2:
+            x, y = window.x, max(available_top, min(window.y + window.height - target, available_top + available_height - target))
+            window.resize(window.width, int(target))
+            window.move(x, y)
+        return True
+
+    def open_post(self, url):
+        if not isinstance(url, str) or not re.fullmatch(r'https://x\.com/thsottiaux/status/[0-9]+', url):
+            raise ValueError('Invalid public post')
+        self._require_local_page()
+        self._opener(url)
+        return True
+
     def open_thread(self, identifier):
         # Do not expose arbitrary shell commands, URLs, or files to the webview.
         if not isinstance(identifier, str) or not UUID.fullmatch(identifier):
@@ -184,7 +207,7 @@ def main(folder):
     webview.settings['ALLOW_DOWNLOADS'] = False
     webview.settings['ALLOW_FILE_URLS'] = False
     window = webview.create_window('Codex 用量', panel_url, js_api=bridge, width=260, height=170,
-                                   min_size=(240, 140), on_top=True, focus=False, background_color='#1b1d21')
+                                   min_size=(240, 100), on_top=True, focus=False, background_color='#1b1d21')
     app.window = bridge._window = window
     image = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
