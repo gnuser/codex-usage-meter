@@ -10,6 +10,8 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     let folder: URL
     var panel: NSPanel!
     var web: WKWebView!
+    let titleLabel = NSTextField(labelWithString: "Codex 用量")
+    let titleAccessory = NSTitlebarAccessoryViewController()
     var item: NSStatusItem!
     var statusMenu: NSMenu!
     var timer: Timer?
@@ -17,6 +19,7 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     var loadedMode = ""
     var selected = ""
     var connection = ""
+    var lastPanelRefresh = Date.distantPast
     var showStamp: NSNumber?
     var lastActivityPoll = Date.distantPast
     var lastQuotaPoll = Date.distantPast
@@ -35,6 +38,22 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
         panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 240, height: 115),
                         styleMask: [.titled, .closable, .miniaturizable, .resizable, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.title = "Codex 用量"
+        panel.titleVisibility = .hidden
+        titleLabel.font = .systemFont(ofSize: 9, weight: .regular)
+        titleLabel.textColor = .secondaryLabelColor
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.alignment = .right
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        let titleContainer = NSView(frame: NSRect(x: 0, y: 0, width: 155, height: 22))
+        titleContainer.addSubview(titleLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: titleContainer.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: titleContainer.trailingAnchor, constant: -7),
+            titleLabel.centerYAnchor.constraint(equalTo: titleContainer.centerYAnchor)
+        ])
+        titleAccessory.view = titleContainer
+        titleAccessory.layoutAttribute = .right
+        panel.addTitlebarAccessoryViewController(titleAccessory)
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
         panel.isFloatingPanel = true
@@ -54,10 +73,8 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
             }
         }
         panel.setFrameAutosaveName("CodexUsageMeterTinyWindow")
-        if !panel.setFrameUsingName("CodexUsageMeterTinyWindow"), let screen = NSScreen.main {
-            let frame = screen.visibleFrame
-            panel.setFrameOrigin(NSPoint(x: frame.maxX - 250, y: max(frame.minY, frame.maxY - 145)))
-        }
+        _ = panel.setFrameUsingName("CodexUsageMeterTinyWindow")
+        WindowPlacement.place(panel)
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
         config.userContentController.add(self, name: "usageControl")
@@ -87,6 +104,10 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     }
     func tick() {
         refreshStatus()
+        if panel.isVisible && Date().timeIntervalSince(lastPanelRefresh) >= 5 {
+            lastPanelRefresh = Date()
+            web.evaluateJavaScript("window.refreshUsage?.()", completionHandler: nil)
+        }
         if let stamp = read("show.json")["at"] as? NSNumber, stamp != showStamp {
             showStamp = stamp
             panel.orderFrontRegardless()
@@ -182,6 +203,12 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
               message.frameInfo.securityOrigin.host == "127.0.0.1",
               message.frameInfo.securityOrigin.port == base.port,
               let body = message.body as? [String: String] else { return }
+        if body["action"] == "setTitle", let title = body["title"], title.count <= 180 {
+            panel.title = title
+            titleLabel.stringValue = title
+            titleLabel.toolTip = title
+            return
+        }
         if body["action"] == "openThread" {
             guard let identifier = body["thread"], UUID(uuidString: identifier) != nil,
                   let url = URL(string: "codex://threads/" + identifier) else { return }
@@ -214,7 +241,10 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
         hideWindow()
         return false
     }
-    @objc func showWindow() { panel.orderFrontRegardless() }
+    @objc func showWindow() {
+        panel.orderFrontRegardless()
+        web.evaluateJavaScript("window.refreshUsage?.()", completionHandler: nil)
+    }
     @objc func hideWindow() { panel.orderOut(nil) }
     @objc func quitWindow() {
         try? Data().write(to: folder.appendingPathComponent("paused"), options: .atomic)
@@ -232,7 +262,3 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     }
     func applicationWillTerminate(_ notification: Notification) { timer?.invalidate() }
 }
-let app = NSApplication.shared
-let delegate = UsageApp(folder: URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true))
-app.delegate = delegate
-app.run()

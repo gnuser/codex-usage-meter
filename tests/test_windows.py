@@ -61,6 +61,23 @@ class WindowsTests(unittest.TestCase):
         with self.assertRaises(ValueError): bridge.open_thread(identifier)
         self.assertEqual(opener.call_count, 1)
 
+    def test_title_bridge_checks_origin_and_payload(self):
+        bridge = Bridge('http://127.0.0.1:1/panel#key=x', opener=Mock())
+        bridge._window = Mock()
+        bridge._window.get_current_url.return_value = bridge._panel_url
+        self.assertTrue(bridge.set_title('周45% · 4天后重置'))
+        for value in (None, 'x' * 181):
+            with self.assertRaises(ValueError): bridge.set_title(value)
+        bridge._window.get_current_url.return_value = 'https://example.com'
+        with self.assertRaises(ValueError): bridge.set_title('untrusted')
+        bridge._window.set_title.assert_called_once()
+
+    def test_placement_respects_work_area(self):
+        from native.window_position import bottom_right
+        self.assertEqual(bottom_right((0, 0, 1000, 800), (0, 0, 1000, 760), 260, 170), (728, 590))
+        self.assertEqual(bottom_right((-1400, 0, -400, 800), (-1400, 0, 0, 760), 260, 170), (-672, 590))
+        self.assertEqual(bottom_right((-500, -500, 100, 100), (0, 0, 1000, 760), 260, 170), (0, 0))
+
     def test_closing_keeps_recovery_path_and_quit_pauses(self):
         with tempfile.TemporaryDirectory() as name:
             app = Desktop(Path(name), 'http://127.0.0.1:1/panel#key=x')

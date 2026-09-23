@@ -11,6 +11,11 @@ import time
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
+if __package__:
+    from .window_position import codex_window_position
+else:
+    from window_position import codex_window_position
+
 UUID = re.compile(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}')
 
 
@@ -42,12 +47,22 @@ class Bridge:
         self._opener = opener or os.startfile
         self._window = None
 
+    def _require_local_page(self):
+        if self._window is None or self._window.get_current_url() != self._panel_url:
+            raise ValueError('Untrusted page')
+
+    def set_title(self, title):
+        if not isinstance(title, str) or len(title) > 180:
+            raise ValueError('Invalid title')
+        self._require_local_page()
+        self._window.set_title(title)
+        return True
+
     def open_thread(self, identifier):
         # Do not expose arbitrary shell commands, URLs, or files to the webview.
         if not isinstance(identifier, str) or not UUID.fullmatch(identifier):
             raise ValueError('Invalid conversation')
-        if self._window is None or self._window.get_current_url() != self._panel_url:
-            raise ValueError('Untrusted page')
+        self._require_local_page()
         self._opener('codex://threads/' + identifier)
         return True
 
@@ -80,6 +95,13 @@ class Desktop:
     def show(self, *_):
         self.window.restore()
         self.window.show()
+        self.refresh_panel()
+
+    def refresh_panel(self):
+        try:
+            self.window.run_js("window.refreshUsage?.()")
+        except Exception:
+            pass  # Loading or closing; the next heartbeat will retry.
 
     def hide(self, *_):
         if self.tray_ready.is_set():
@@ -112,7 +134,7 @@ class Desktop:
     def poll(self):
         pool = ThreadPoolExecutor(max_workers=2)
         active = quota = None
-        next_active = next_quota = 0
+        next_active = next_quota = next_panel = 0
         try:
             while not self.stopped.wait(1):
                 stamp = self.read_show()
@@ -120,6 +142,10 @@ class Desktop:
                     self.show_stamp = stamp
                     self.show()
                 now = time.time()
+                if now >= next_panel:
+                    next_panel = now + 5
+                    # A native heartbeat recovers web timers suspended while minimized.
+                    self.refresh_panel()
                 if active is not None and active.done():
                     try:
                         self.count = sum(s['updatedAt'] >= now - 1800 for s in active.result()['sessions'])
@@ -172,6 +198,12 @@ def main(folder):
     window.events.closing += app.closing
     window.events.closed += app.stopped.set
     def started():
+        try:
+            position = codex_window_position()
+            if position is not None:
+                window.move(*position)
+        except (OSError, ValueError):
+            pass  # Placement is optional; never prevent the tray and refresh loop starting.
         threading.Thread(target=app.run_tray, daemon=True).start()
         threading.Thread(target=app.poll, daemon=True).start()
     try:
