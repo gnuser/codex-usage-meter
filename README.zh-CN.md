@@ -8,19 +8,15 @@
 
 [观看演示](docs/media/getting-started.mp4) · 英文 AI 克隆旁白，已获本人授权；画面为示例数据。
 
-## 安装
+## 一句话安装
 
-[**macOS / Windows 安装步骤 →**](docs/INSTALL.zh-CN.md)
+把这句话发给 Codex：
 
-想先用浏览器试一下？安装 Python 3.10+ 后运行：
+> 请按照这个 skill 帮我安装 Codex Usage Meter：https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
 
-```sh
-git clone https://github.com/gnuser/codex-usage-meter.git
-cd codex-usage-meter
-python3 meter.py serve
-```
+Codex 会按系统完成配置。首次自动启动还需在 `/hooks` 中确认信任一次。
 
-Windows 将最后一行改为 `py -3 meter.py serve`。打开终端打印的链接，并保持终端运行。
+[手动安装](docs/INSTALL.zh-CN.md)
 
 ## 使用
 
