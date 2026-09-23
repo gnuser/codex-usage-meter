@@ -28,7 +28,7 @@ body {
 
 main {
   max-width: none;
-  height: 100dvh;
+  max-height: 100dvh;
   margin: auto;
   padding: 3px 7px;
   display: flex;
@@ -230,7 +230,7 @@ button:focus-visible {
 }
 
 #resetStatus {
-  margin-top: auto;
+  margin-top: 0;
   flex-shrink: 0;
   border-top: 1px solid var(--line);
   padding-top: 3px;
@@ -250,4 +250,34 @@ button:focus-visible {
     --accent: #6bb69b;
     --track: #2b3038;
   }
+}
+
+#tibo {
+  flex-shrink: 0;
+  border-top: 1px solid var(--line);
+  font-size: 9px;
+}
+#tiboToggle {
+  width: 100%;
+  border: 0;
+  padding: 2px 0;
+  background: none;
+  text-align: left;
+  font-size: 9px;
+  color: var(--muted);
+}
+#tiboDetails {
+  max-height: 100px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+#tiboDetails p {
+  margin: 2px 0;
+}
+#tiboDetails article {
+  border-top: 1px solid var(--line);
+  padding: 3px 0;
+}
+#tiboDetails a {
+  color: var(--accent);
 }

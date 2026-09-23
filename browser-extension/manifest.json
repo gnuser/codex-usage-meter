@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Codex Usage \u00b7 Tibo Reader",
+  "version": "0.1.1",
+  "description": "Read Tibo's public posts using your signed-in X tab and send them only to your local usage meter.",
+  "permissions": ["alarms", "storage"],
+  "host_permissions": ["https://x.com/*", "http://127.0.0.1/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/thsottiaux?codex_usage_reader=1"],
+      "js": ["relay.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://x.com/thsottiaux?codex_usage_reader=1"],
+      "js": ["timeline-data.js", "capture.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}

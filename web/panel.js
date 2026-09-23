@@ -221,6 +221,7 @@ $('quotaSummary').onclick = () => {
   renderResetSummary();
 };
 window.refreshUsage = async () => {
+  window.refreshTibo?.();
   await refresh(true);
 };
 $('activityCount').onclick = () => window.refreshUsage();
