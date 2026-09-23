@@ -1,48 +1,63 @@
-# 1.3 更新验证
+# Validation history
 
-28 项无需监听端口的 Python 测试通过，新增混合模型和无法归因区间测试；13 项图表计算断言通过（输入/缓存/输出无重复累加、未知字段、零值、异常总计、推理子项）；JavaScript 语法检查通过。未重新执行受限端口监听测试。浏览器安全策略拒绝打开本地合成预览页，本轮没有完成视觉和点击交互实测，不把代码检查等同于浏览器验收。未将合成预览或个人日志打入插件包。
+**English** | [简体中文](VALIDATION.zh-CN.md)
 
-# 1.2 更新验证
+[Home](../README.md) · [Current CI](https://github.com/gnuser/codex-usage-meter/actions)
 
-27 项无需监听端口的测试通过，JavaScript 语法检查通过。新增测试验证初次只打开 1 个会话日志、手动增加到 4 个、刷新不扩展范围、无更多数据状态和非法 limit 参数。原有 HTTP 测试仍未在当前受限环境重跑。实机初始读取只载入 1 个日志；没有读取其他会话正文。本版本未声称新版服务已重启。
+These are historical results with their original limitations. They do not imply that every check was repeated for every later version.
 
-# 1.1 更新验证
+## English interface and overview · 2026-09-24
 
-新增会话标题、所选会话用户/助手正文、逐轮用量对应展示。26 项测试中 25 项通过，包含新增标题优先级、正文跨轮关联、镜像事件去重、内部指令排除和上下文前消息关联测试。HTTP 监听测试被当前沙箱权限阻止，非断言失败；原版同项此前已通过。JavaScript 语法检查通过。当前审批策略拒绝提升端口权限，因此新版服务未重启、未声称完成本次浏览器实测。
+[PR #5](https://github.com/gnuser/codex-usage-meter/pull/5): all 53 Python tests and seven JavaScript suites passed locally. macOS and Windows CI passed, including native build/registration and the Windows WebView2 smoke test. JavaScript syntax and video-script compilation checks passed. The final roughly 29-second MP4 contains H.264 video and AAC audio; its visual layout was inspected. Narration is an authorized AI voice clone, marked in the video. Raw recordings and voice models were excluded from the repository.
 
-以下是 1.0 的历史验证记录。
+## Version 1.3
 
-# 验证记录
+All 28 Python tests that did not require a listening port passed, including mixed-model and unattributed-interval coverage. Thirteen chart assertions passed, covering input/cache/output accounting, unknowns, zero values, invalid totals, and reasoning subcategories. JavaScript syntax checks passed.
 
-日期：2026-09-19。环境：macOS、Python 3.13.5、Codex CLI 0.153.0。运行时只使用 Python 标准库。
+Restricted port-listening tests were not rerun. Browser policy blocked the local synthetic preview, so visual/click testing was not completed for this update. Code checks were not treated as browser acceptance. Synthetic previews and personal logs were not packaged.
 
-## 已执行
+## Version 1.2
 
-- Python 自动测试：23 项通过。包含真实 stdio MCP 进程、发布包 `.mcp.json` 启动器、本机 HTTP 鉴权/Host/路由、临时目录安装、保留已有市场条目、重复安装拒绝、日志与接口边界测试。
-- 官方 plugin-creator `validate_plugin.py`：通过。
-- 官方 skill-creator `quick_validate.py`：通过。
-- JavaScript `node --check web/app.js`：通过。
-- 实机日志扫描：795 个 JSONL 文件，758 个会话（当时快照）；首轮约 10.9 秒。当前会话六个 token 字段均成功解析；首轮后按文件签名缓存。
-- 官方 App Server 实机：初始化成功，`account/rateLimits/read` 和 `account/usage/read` 均成功，按 thread 查询返回 `threadUsage: null`。没有创建模型请求或调用额度重置。
-- 浏览器实测：载入当前会话，token 卡片、调用表、缓存与推理分项可见；点击官方查询后显示账号限额、重置时间、累计 token、每日桶；空会话估算显示“不可获取”。已检查页面布局。
+All 27 non-listening tests and JavaScript syntax checks passed. New coverage checked initial loading of one log, expansion to four, refresh without increasing scope, end-of-list behavior, and invalid limits. HTTP tests were not rerun in the restricted environment.
 
-初次测试中本机监听权限被沙箱阻止，授权后 HTTP 测试通过；官方格式校验依赖 PyYAML，安装在工作目录用于验证，不属于插件运行依赖。浏览器初测发现一个 JavaScript 括号错误，已修复，之后语法检查和实际数据显示通过。
+The initial device read loaded only one log and no other conversation bodies. This update did not claim the new service had been restarted.
 
-## 测试覆盖
+## Version 1.1
 
-1. 重复累计快照不重复计数；相同 last、不同累计的真实新增调用仍计数。
-2. 活动/归档同一会话副本去重；分叉复制事件去重。
-3. 输入缓存、输出推理不重复相加；缺失分项和空轮次为 null。
-4. 首条记录含历史用量、跨调用缺口、跨轮次区间、累计回退、零初始计数。
-5. 半行日志恢复、文件截断/删除、损坏行、未知字段结构。
-6. 多限额桶、旧版字段、未知剩余比例、比例边界。
-7. App Server 初始化、只读方法白名单、进程退出、超时清理、部分接口失败。
-8. MCP 初始化协商、通知无应答、工具枚举/调用、未知方法错误。
-9. 本机 HTTP 的授权密钥、Host 检查、静态资源白名单。
-10. 个人市场首次安装和不覆盖策略。
+Added conversation titles, selected user/assistant messages, and per-turn usage. Of 26 tests, 25 passed, including title precedence, cross-turn message association, mirrored-event deduplication, internal-instruction exclusion, and pre-context message association.
 
-## 未声称验证
+The HTTP test was blocked by sandbox listening permissions, not an assertion failure; it had passed previously. JavaScript syntax checks passed. Escalation was rejected, so this update did not restart the service or claim browser validation.
 
-没有在用户真实个人市场中安装/启用此插件；交付的是可安装项目，安装器在临时目录验证。没有验证所有 Codex 版本、原生 Windows、远程主机日志、所有订阅类型或 API 组织管理员接口。云端用量不自动导入；本地日志不是完整计费账本。
+## Version 1.0 · 2026-09-19
 
-因本次会话仍在生成，截图/人工观察的数字会继续变化，未将真实账号原始响应或完整个人日志打包。使用 README 中的命令可再次复核。
+Environment: macOS, Python 3.13.5, Codex CLI 0.153.0. Runtime dependencies were Python standard library only.
+
+### Completed checks
+
+- All 23 Python tests passed: real stdio MCP process, packaged `.mcp.json` launcher, HTTP authentication/Host/routing, temporary-directory installation, preserving marketplace entries, rejecting duplicate installs, and log/API boundaries.
+- Official plugin-creator `validate_plugin.py` and skill-creator `quick_validate.py` passed.
+- `node --check web/app.js` passed.
+- Device log scan: 795 JSONL files and 758 conversations at that snapshot; first pass about 10.9 seconds. All six token fields parsed for the current conversation; later reads used file-signature caching.
+- App Server initialized; `account/rateLimits/read` and `account/usage/read` succeeded. A thread query returned `threadUsage: null`. No model request or allowance reset was performed.
+- Browser check: conversation token cards, call table, cache/reasoning details, account limits, reset times, cumulative tokens, and daily buckets rendered. Missing estimates displayed as unavailable. Layout was inspected.
+
+Initial listening was blocked by the sandbox; HTTP tests passed after authorization. Official format validation used PyYAML in the workspace, not as a runtime dependency. An initial JavaScript bracket error was fixed before the final syntax/data checks passed.
+
+### Coverage
+
+1. Duplicate cumulative snapshots do not double-count; new calls with equal last values but different cumulative values still count.
+2. Active/archive copies of a conversation and copied fork events are deduplicated.
+3. Cache/reasoning subcategories are not counted twice; missing breakdowns and empty turns retain null.
+4. Initial history, gaps between calls, cross-turn intervals, cumulative decreases, and initial zero counts.
+5. Partial-line recovery, truncated/deleted files, damaged lines, and unknown field structures.
+6. Multiple limit buckets, older fields, unknown remaining percentages, and percentage boundaries.
+7. App Server initialization, read-only allowlist, exits, timeout cleanup, and partial API failure.
+8. MCP negotiation, notifications without responses, tool listing/calls, and unknown methods.
+9. HTTP access key, Host checks, and static-resource allowlist.
+10. First personal-marketplace install and non-overwrite behavior.
+
+### Not verified in version 1.0
+
+Installation/enabling in the user's actual personal marketplace was not performed; the installer was checked in temporary directories. Not all Codex versions, native Windows, remote-host logs, subscription types, or organization admin APIs were verified at that time. Cloud usage is not automatically imported; local logs are not a complete billing ledger.
+
+Observed values could change while the conversation was generating. Raw account responses and complete personal logs were not packaged. Use the README commands to repeat checks.

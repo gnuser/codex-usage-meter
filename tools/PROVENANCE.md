@@ -1,10 +1,14 @@
-# 辅助工具来源
+# Helper provenance
 
-以下文件从本机 Codex 内置 `plugin-creator` 技能的 `scripts/` 目录原样复制，用于个人市场配置和缓存更新：
+**English** | [简体中文](PROVENANCE.zh-CN.md)
 
-- create_basic_plugin.py
-- identifier_validation.py
-- read_marketplace_name.py
-- update_plugin_cachebuster.py
+[Home](../README.md)
 
-复制时间：2026-09-19。保留原始文件内容；这些文件是已有辅助工具，不是本项目新编写的运行时。插件运行不需要它们，首次安装和更新才使用。它们受原来源适用许可约束，本项目不为其额外授予许可。
+The following files were copied unchanged from the local Codex bundled `plugin-creator` skill's `scripts/` directory for personal-marketplace configuration and cache updates:
+
+- `create_basic_plugin.py`
+- `identifier_validation.py`
+- `read_marketplace_name.py`
+- `update_plugin_cachebuster.py`
+
+Copied on 2026-09-19. Their original contents were retained. These are existing helpers, not newly authored project runtime code. They are used for installation and updates, not required to run the plugin. Their original applicable licenses govern them; this project grants no additional license for those files.
