@@ -6,6 +6,7 @@ const QuotaSummary = require('../web/quota-summary.js');
 class Element {
   constructor() {
     this.parent = null;
+    this.detachments = 0;
     this.children = [];
     this.textContent = '';
     this.style = {};
@@ -20,6 +21,7 @@ class Element {
   }
   remove() {
     if (this.parent) {
+      this.detachments++;
       this.parent.children = this.parent.children.filter((n) => n !== this);
       this.parent = null;
     }
@@ -27,6 +29,13 @@ class Element {
   insertBefore(item, before) {
     item.remove();
     const index = before ? this.children.indexOf(before) : this.children.length;
+    item.parent = this;
+    this.children.splice(index, 0, item);
+  }
+  replaceChild(item, old) {
+    const index = this.children.indexOf(old);
+    old.remove();
+    item.remove();
     item.parent = this;
     this.children.splice(index, 0, item);
   }
@@ -173,6 +182,7 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   assert.ok(card().children.some((n) => n.textContent === '本轮 输入 2.50K · 输出 600.00'));
   assert.equal(card(), original, 'keep article during refresh');
   assert.equal(toggle(), originalToggle, 'keep the pressed toggle attached during refresh');
+  assert.equal(toggle().detachments, 0, 'do not move or detach the pressed button');
   assert.equal(card().dataset.expanded, 'true');
   assert.equal(details().children[1].children[1].textContent, 'input 2.50K · output 600.00');
   toggle().onclick();

@@ -66,4 +66,3 @@ def codex_window_position(width=260, height=170):
     user32.EnumWindows.argtypes = [callback_type, wintypes.LPARAM]
     user32.EnumWindows(visit, 0)
     return found[0] if found else None
-

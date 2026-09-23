@@ -157,7 +157,10 @@ async function refresh(force = false) {
       );
       // Insert replacements around the existing toggle; never detach the focused button.
       for (let i = 0; i < children.length; i++) {
-        if (old.children[i] !== children[i]) old.insertBefore(children[i], old.children[i] || null);
+        const current = old.children[i];
+        if (current === children[i]) continue;
+        if (current && !children.includes(current)) old.replaceChild(children[i], current);
+        else old.insertBefore(children[i], current || null);
       }
       while (old.children.length > children.length) old.lastElementChild.remove();
       const toggle = previousToggle || children.find((n) => n.className === 'model-toggle');
