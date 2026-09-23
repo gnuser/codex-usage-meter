@@ -9,15 +9,22 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from floating import atomic_json
 from meter import Service
-from native.windows import Desktop, main
+from native.windows import Bridge, Desktop, main
 
 
 def smoke():
     import webview
-    loaded, opened = threading.Event(), threading.Event()
+    loaded, opened, titled = threading.Event(), threading.Event(), threading.Event()
     failures = []
     identifier = '00000000-0000-0000-0000-000000000001'
     start = webview.start
+
+    set_title = Bridge.set_title
+    def capture_title(bridge, title):
+        result = set_title(bridge, title)
+        if title.startswith('周'):
+            titled.set()
+        return result
 
     def capture(url):
         if url == 'codex://threads/' + identifier:
@@ -33,6 +40,8 @@ def smoke():
                 if not loaded.wait(40):
                     raise AssertionError('WebView2 page did not load')
                 window.run_js("const probe=setInterval(()=>{if(window.pywebview?.api?.open_thread){clearInterval(probe);window.pywebview.api.open_thread('" + identifier + "');}},100);")
+                if not titled.wait(15):
+                    raise AssertionError('Quota module or native title bridge failed')
                 if not opened.wait(15):
                     raise AssertionError('Page-to-native conversation bridge failed')
             except Exception as exc:
@@ -47,7 +56,7 @@ def smoke():
         try:
             atomic_json(folder/'connection.json', {'url':service.dashboard()})
             account = {'limits':None, 'usage':None, 'errors':{}, 'fetchedAt':0}
-            with patch('meter.account_snapshot', return_value=account), patch.object(os, 'startfile', capture), \
+            with patch('meter.account_snapshot', return_value=account), patch.object(Bridge, 'set_title', capture_title), patch.object(os, 'startfile', capture), \
                  patch.object(webview, 'start', checked_start), patch.object(Desktop, 'closing', return_value=True):
                 main(folder)
         finally:

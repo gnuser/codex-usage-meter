@@ -376,6 +376,8 @@ class IntegrationTests(unittest.TestCase):
                 data = json.load(urlopen(req('/api/panel?thread=one')))
                 self.assertEqual([t['number'] for t in data['selected']['turns']], list(range(3,13)))
                 self.assertNotIn('events', data['selected'])
+                self.assertIsInstance(data['selected']['models'], list)
+                self.assertTrue(urlopen(base+'/quota-summary.js').read())
                 self.assertNotIn('messages', json.dumps(data))
                 detail = json.load(urlopen(req('/api/snapshot?thread=one&scope=thread')))
                 self.assertEqual(detail['selected']['id'], 'one')

@@ -28,7 +28,7 @@ def build(folder):
     binary = contents / 'MacOS/CodexUsageMeter'
     binary.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(['swiftc', '-module-cache-path', str(folder / 'module-cache'),
-                    str(ROOT / 'native/UsageWindow.swift'), '-o', str(binary),
+                    *[str(path) for path in sorted((ROOT / 'native').glob('*.swift'))], '-o', str(binary),
                     '-framework', 'AppKit', '-framework', 'WebKit'], check=True)
     with (contents / 'Info.plist').open('wb') as stream:
         plistlib.dump({'CFBundleExecutable': 'CodexUsageMeter', 'CFBundleIdentifier': 'local.codex.usage-meter',

@@ -1,184 +1,313 @@
 # Codex 用量仪表
 
-一个可运行的本机 Codex 插件：Python 标准库 MCP 服务 + 中文浏览器仪表 + 用量技能（1.1：会话标题与逐轮正文）。**它记录 token，并查询官方账号限额；不承诺把每次调用精确换算成订阅额度或账单。**
+在一个小窗口里查看 Codex 最近活跃的会话、每轮 token 用量和账号剩余额度。支持 **macOS 菜单栏**、**Windows 系统托盘**，也可以使用完整浏览器仪表或安装为 Codex 插件。
 
-## 共用悬浮窗（macOS）
+本项目不是 OpenAI 官方产品。**token 用量与订阅额度是两种不同数据，不能直接换算成费用或“剩余 token”。**
 
-所有会话共用一个 240×115 的小窗，显示最近 30 分钟有日志更新的会话、本轮与累计 token、最近 10 轮迷你柱状图。活跃不表示正在运行。数字采用 K/M/B/T，保留两位小数；各会话柱高独立缩放。点击标题通过 Codex 会话链接打开对应对话。
+## 能做什么
 
-菜单栏显示 `▥ 活跃数 · 剩余百分比`：活跃数每 15 秒更新，官方账号额度每 5 分钟查询。多个独立额度窗口取最低剩余百分比，悬停查看各窗口；不将额度相加或换算成剩余 token。读取失败显示 `—`，窗口隐藏时菜单栏继续更新。
+- **精简会话列表**：显示最近 30 分钟有日志更新的会话，超过时间自动移除。
+- **逐轮用量**：每个会话显示本轮、累计 token、本轮输入 / 输出和最近 10 轮柱状图；K / M / B / T 单位，保留两位小数。
+- **点击跳转**：点击会话标题，打开对应的 Codex 桌面对话。
+- **额度摘要**：查看官方账号剩余额度；收起窗口后，菜单栏或托盘继续更新。
+- **完整仪表**：按需加载更多历史会话，比较轮次与模型用量、展开对话正文、导出 JSON。
 
-首次安装（macOS、Xcode Command Line Tools、Python 3.10+）：
+“活跃”指日志近期更新，**不等于正在运行，也不表示当前前台会话**。点击 Codex 侧栏本身不会让本工具识别前台会话。
 
-```sh
-python3 native/build.py
-python3 native/install_hook.py
-python3 floating.py show --thread YOUR_CODEX_THREAD_ID
-```
+## 选择使用方式
 
-安装器保留现有用户 hooks，修改前保存权限为 0600 的备份，不更改现有 hook 信任。**须在 Codex 的 `/hooks` 中审查并信任新加的 `floating.py hook` 定义**；未信任时 Codex 会跳过。使用插件自带 `hooks/hooks.json` 时不需重复注册用户 hook，但仍需构建窗口并信任 hook。
+| 你想做什么 | 使用方式 | 是否需要安装 Codex 插件 |
+| --- | --- | --- |
+| 先看看用量和历史记录 | 浏览器仪表 | 不需要 |
+| 工作时常驻一个小窗口 | macOS / Windows 悬浮窗 | 不需要 |
+| 在 Codex 中用自然语言查询用量 | Codex 插件 | 需要 |
 
-- 窗口默认显示，跳转对话不自动收起；缩放、最小化、关闭按钮收起窗口。点击菜单栏或 Dock 的「Codex 用量」可重新展开，拖动边缘调整尺寸。
-- 菜单栏右键可退出并暂停自动打开；上述 `show` 命令恢复。
-- `UserPromptSubmit` 仅传递会话 ID，可启动共用窗口；运行中不强制展开。未实现识别 Codex 内单纯点击切换或接管审批。
-- 本地状态目录为 `~/Library/Application Support/CodexUsageMeter`，访问密钥文件权限 0600；不保存 hook 正文。
-- 无需管理员权限、辅助功能或屏幕录制权限。窗口退出后本机服务关闭。
+浏览器仪表和 MCP 服务只依赖 Python 标准库。macOS 小窗额外需要 Swift 编译工具；Windows 小窗额外需要 WebView2 和 Python 桌面依赖。Node.js 仅用于开发测试。
 
-多会话展示参考 [OpenIsland 文档](https://github.com/Octane0411/open-vibe-island/blob/main/docs/hooks.md)，实现独立编写。
+## 1. 下载项目
 
-## Windows 10 / 11
-
-Windows 版复用相同的极简列表，使用 [pywebview / WebView2](https://pywebview.flowrl.com/guide/web_engine) 承载窗口，[pystray](https://pystray.readthedocs.io/en/latest/usage.html) 提供托盘恢复入口。需要 Windows 原生 Python 3.10+、Microsoft Edge WebView2 Runtime，以及已安装并登录的 Codex。不要从 WSL 启动桌面窗口；WSL 日志也不会自动并入 Windows 本机日志。
-
-在仓库目录的 PowerShell 中执行（推荐独立虚拟环境，无需激活）：
-
-```powershell
-py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r native/requirements-windows.txt
-.\.venv\Scripts\python.exe native/build.py
-.\.venv\Scripts\python.exe native/install_hook.py
-.\.venv\Scripts\python.exe floating.py show --thread YOUR_CODEX_THREAD_ID
-```
-
-替换最后一行的真实会话 ID；新 hook 仍需在 Codex `/hooks` 中审查并信任。安装会记住此 Python 环境，后续不要移动或删除 `.venv` 与源码目录。若只需手动打开，可跳过 hook 安装。
-
-- 默认 260×170，可缩放、置顶；最小化保留任务栏入口。关闭按钮收进托盘，双击托盘图标或选择“显示用量”恢复。若托盘初始化失败，关闭会退回任务栏最小化，避免窗口失联。
-- Windows 托盘不能像 macOS 菜单栏一样常驻文本；悬停或打开托盘菜单可查看活跃会话数与最低剩余额度。后台刷新频率与 macOS 相同。
-- 点击会话标题调用系统注册的 `codex://threads/ID` 链接；如果未注册，面板显示打开失败，需先安装 Codex 桌面应用。
-- 运行数据位于 `%LOCALAPPDATA%\CodexUsageMeter`，使用当前 Windows 用户目录权限。`CODEX_USAGE_DATA` 可覆盖路径，不要设置到共享目录。
-- 本机日志默认读取 `%USERPROFILE%\.codex`，可用 `CODEX_HOME` 指定其他路径。额外窗口依赖只用于 Windows，macOS 仍使用原生 Swift 窗口。
-
-如需安装 MCP 插件，请用同一环境执行 `.\.venv\Scripts\python.exe install.py`。安装器会为复制后的 Windows 插件写入 Python 绝对路径和 Windows hook 命令，无需 `sh` 或 `python3` 别名。直接从源码导入插件时，需要自行将 `.mcp.json` 改为该 Python 路径、参数 `["./meter.py", "mcp"]`；Windows hook 推荐使用上述安装器注册。
-
-自动测试涵盖进程互斥、运行路径、插件安装配置、托盘不可用时的恢复行为与链接校验。Windows 真机的托盘操作、焦点与跨应用跳转仍需验收。
-
-## 浏览器小面板
-
-`usage_dashboard(thread_id=真实会话ID, view="panel")` 返回同一极简活跃会话列表的本机链接，`view="full"` 返回完整仪表。小面板每 5 秒刷新，隐藏时暂停；仅解析最近活跃会话的计数，不返回消息正文。会话目录最多读取最新 100 条元数据。点击标题打开 Codex 对话，顶部剩余额度可点击刷新；深浅色跟随系统。
+需要 Git 和 **Python 3.10+**。查询官方额度还需要本机可运行且已登录的 Codex CLI；会话跳转需要安装 Codex 桌面应用。
 
 ```sh
-python3 meter.py serve --thread YOUR_CODEX_THREAD_ID --view panel
+git clone https://github.com/gnuser/codex-usage-meter.git
+cd codex-usage-meter
 ```
 
-## 图表查看（1.3）
+仓库为私有时，需要先使用有访问权限的 GitHub 账号完成认证。也可以下载源码 ZIP 并解压，在解压目录打开终端。
 
-- **会话横向柱状图**：比较已加载会话的可归因小计，点击进入某个会话。不会自动扩大日志读取范围。
-- **逐轮柱状图**：每轮显示请求摘要、日志模型和调用/区间记录数；点击展开对应正文。
-- **总 token 分色构成**：非缓存输入、缓存读取、输出。缓存写入和推理不再重复叠加；细分不完整时用灰色总量。
-- **比较指标**：总 token、非缓存输入、输出、缓存读取、推理输出。可按原顺序或用量降序排列；不同图表独立缩放，读取标注数值比较。
-- **辅助信息**：输入缓存占比、所选指标最高的轮次，以及可展开的模型用量图。未知值显示“未记录”，与零区分。
-- **模型边界**：仅来自日志标注，不保证是上游实际路由模型。跨调用缺口按“模型未知 / 区间无法归因”展示，不冒充某个模型的精确用量。
+后续命令均在项目目录执行。请保留源码目录；悬浮窗后台与 hook 会使用其中的脚本。
 
-柱状图表示 token，不表示订阅额度占比或费用；不同模型的 token 不能按 1:1 推算额度。非缓存输入按 input − cached read 计算，可能包含缓存写入。点击正文查看、统计表和 JSON 导出继续保留。
+## 2. 先体验浏览器仪表
 
-图表无第三方依赖。开发测试：`node tests/test_charts.js`。
-
-## 按需加载（1.2）
-
-首次只读取最近 1 个会话；点击“再加载最近 3 个会话”后增加为 4 个，再点增加为 7 个，以此类推。按日志修改时间排序；只枚举其他日志的文件名与修改时间，不读取其内容。标题仅返回已加载范围，正文只返回选中会话。累计也仅针对已加载范围；刷新不会自动扩展范围。每次重新打开页面从 1 个开始，单次最多加载 1000 个会话。
-
-命令行用 `python3 meter.py snapshot --limit 4`，MCP `usage_snapshot` 使用 `limit` 参数。带有指定会话 ID 的链接不会额外读取加载范围之外的会话。
-
-直接打开 `web/index.html` 不能访问日志；请运行下方服务并打开它输出的 HTTP 地址。
-
-## 先运行
-
-需要 Python **3.10+**。无 pip/npm 运行依赖。macOS / Linux 可直接运行；Windows 请在 WSL 中安装此插件（原生 Windows 的 shell 启动器未支持）。
-
-在解压后的 `codex-usage-meter` 文件夹运行：
+**macOS / Linux：**
 
 ```sh
 python3 meter.py serve
 ```
 
-打开终端打印的完整 `http://127.0.0.1:随机端口/#key=...` 地址，在下拉框选择会话。地址含临时本机访问密钥；每次重启改变。终端需保持运行；Ctrl+C 停止。
+**Windows PowerShell：**
 
-```sh
-# 已知当前 Codex thread ID 时，直接选中
-python3 meter.py serve --thread YOUR_CODEX_THREAD_ID
-
-# 自定义日志目录；必须位于子命令前
-python3 meter.py --home /path/to/codex-home serve
-
-# 命令行 JSON 输出
-python3 meter.py snapshot --thread YOUR_CODEX_THREAD_ID
-python3 meter.py account --thread YOUR_CODEX_THREAD_ID
+```powershell
+py -3 meter.py serve
 ```
 
-界面包括：会话标题、逐轮用户消息和助手回复（展开全文）、本机去重小计、所选会话累计、本轮请求小计、最近调用细分、每轮和每次调用表、官方限额窗口、重置时间、账号累计和每日 token、官方会话估算（若返回）、JSON 导出和覆盖范围说明。日志自动刷新默认关闭，勾选后每 10 秒刷新已加载范围；官方账号查询仅在点击按钮时发生，不持续轮询。
+打开终端打印的完整 `http://127.0.0.1:端口/#key=...` 链接即可。保持终端运行，按 `Ctrl+C` 停止服务。不要直接双击 `web/index.html`。
 
-## 安装为 Codex 插件
+首次只加载最近 1 个会话。点击“再加载最近 3 个会话”扩大范围，再选择要查看的会话。日志自动刷新默认关闭，开启后每 10 秒刷新已加载范围；官方额度由页面按钮单独查询。
 
-安装前可先运行下方测试。安装操作会复制本项目到 `~/plugins/codex-usage-meter`，通过附带的 plugin-creator 官方技能辅助脚本登记默认个人市场 `~/.agents/plugins/marketplace.json`，保留已有市场名称、显示名称及其他条目。
+链接包含临时访问密钥，服务重启后旧链接失效。不要分享带 `key` 的完整链接。
+
+## 3. 安装桌面悬浮窗
+
+### macOS
+
+先检查 Python、Codex CLI 和编译工具：
+
+```sh
+python3 --version
+codex --version
+xcode-select -p
+```
+
+如果尚未安装 Xcode Command Line Tools，执行 `xcode-select --install`，完成系统安装后继续：
+
+```sh
+python3 native/build.py
+```
+
+编译后的应用位于 `~/Library/Application Support/CodexUsageMeter/CodexUsageMeter.app`。首次启动需要通过下文的 `floating.py show` 命令或受信任的 hook，后台服务会一起启动。
+
+### Windows 10 / 11
+
+使用 **Windows 原生 PowerShell 和 Python**，不要在 WSL 中启动桌面窗口。Windows 与 WSL 的日志目录不同，本工具不会自动合并它们。
+
+需要 [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。安装 Python 后，推荐创建独立环境，无需激活：
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r native/requirements-windows.txt
+.\.venv\Scripts\python.exe native/build.py
+```
+
+Windows 小窗使用 [pywebview](https://pywebview.flowrl.com/guide/web_engine) 和 [pystray](https://pystray.readthedocs.io/en/latest/usage.html)。安装步骤会记住当前 Python 环境，请不要移动或删除 `.venv`；移动项目后需重新安装并更新 hook。
+
+### 首次启动：手动打开
+
+先查看最近的会话 ID 和标题，选择你要打开的会话。这一步只读取目录与标题元数据。
+
+**macOS：**
+
+```sh
+python3 -c "from usage_meter.ledger import Ledger; print('\n'.join(s['id']+'  '+s['title'] for s in Ledger().catalog(10)['sessions']))"
+python3 floating.py show --thread YOUR_CODEX_THREAD_ID
+```
+
+**Windows：**
+
+```powershell
+.\.venv\Scripts\python.exe -c "from usage_meter.ledger import Ledger; print('\n'.join(s['id']+'  '+s['title'] for s in Ledger().catalog(10)['sessions']))"
+.\.venv\Scripts\python.exe floating.py show --thread YOUR_CODEX_THREAD_ID
+```
+
+将 `YOUR_CODEX_THREAD_ID` 替换为实际 ID，不要原样执行。小窗显示的是所有最近活跃会话，不是只显示传入的会话。如果最近 30 分钟没有日志更新，列表会为空；在 Codex 中发送一条消息后等待刷新即可。
+
+### 可选：发送消息时自动启动
+
+如果希望以后无需手动运行 `show`，可以注册 `UserPromptSubmit` hook。
+
+**macOS：**
+
+```sh
+python3 native/install_hook.py
+```
+
+**Windows：**
+
+```powershell
+.\.venv\Scripts\python.exe native/install_hook.py
+```
+
+然后在 Codex CLI 的 `/hooks` 中审查并信任新增的 `floating.py hook`，新建一个会话并发送消息验证。**仅注册配置不会自动授予信任。**
+
+安装器会保留原有 hooks，并在修改前备份。hook 只传递会话 ID，不保存消息正文；窗口已经收起时，新消息不会强制展开它。
+
+如果准备使用下文的 Codex 插件，可使用插件自带 hook，跳过这里的用户级 hook 注册，避免重复配置。插件 hook 同样需要信任，桌面窗口仍需先安装。
+
+## 4. 日常使用
+
+| 操作 | macOS | Windows |
+| --- | --- | --- |
+| 打开对应对话 | 点击会话标题 | 点击会话标题 |
+| 调整窗口大小 | 拖动窗口边缘 | 拖动窗口边缘 |
+| 收起窗口 | 左上角缩放、最小化或关闭按钮 | 关闭按钮收进托盘；最小化保留任务栏入口 |
+| 找回窗口 | 点击菜单栏摘要，或 Dock 的「Codex 用量」 | 双击托盘图标，或右键选择“显示用量”；最小化时点任务栏 |
+| 展开重置详情 | 点击小窗顶部的剩余额度 | 点击小窗顶部的剩余额度 |
+| 退出并暂停自动打开 | 菜单栏右键菜单 | 托盘右键菜单 |
+| 退出后恢复 | 再次运行 `floating.py show --thread 实际ID` | 再次运行 `floating.py show --thread 实际ID` |
+
+悬浮窗启动时默认定位到 Codex 窗口内的右下角，可手动拖动。macOS 未找到可见 Codex 窗口时使用屏幕右下角；Windows 未找到时保留系统默认位置。
+
+小窗默认保持可见，点击会话跳转后不会自动收起。macOS 默认内容尺寸为 240×115，Windows 默认窗口尺寸为 260×170。
+
+macOS 菜单栏显示类似 `▥ 2 · 96.00%`：`2` 是最近活跃会话数，百分比是独立额度窗口中最低的剩余值，悬停可看窗口明细。Windows 托盘提供图标，摘要显示在悬停提示和右键菜单中，不常驻为任务栏文字。
+
+刷新规则：
+
+- 桌面标题栏显示周额度剩余和自动重置倒计时（准确日期可展开查看），底部状态栏显示手动重置次数和最近一张可用重置资格的过期倒计时。点击面板里的额度百分比展开自动重置时间与资格到期倒计时；接口未提供时显示未知。
+- 会话列表：每 5 秒刷新；桌面端另有刷新检查，重新展开时立即刷新。浏览器页面隐藏时暂停。点击顶部活跃数可手动刷新，悬停可看最近更新时间。
+- 点击会话右侧 ▸ 展开（默认收起），再点 ▾ 收起：查看该会话按模型累计的 input / output tokens，使用 K、M、B 单位并保留两位小数；无法归属到具体模型的记录单独列出。
+- 菜单栏 / 托盘：活跃数每 15 秒刷新，账号额度每 5 分钟查询，收起后仍更新。
+- 小窗顶部额度：打开时查询，之后每 5 分钟后台更新；点击百分比仅展开 / 收起详情，不等待网络请求。
+
+## 5. 可选：安装为 Codex 插件
+
+只使用悬浮窗或浏览器仪表时，可以跳过本节。
+
+**macOS：**
 
 ```sh
 python3 install.py --enable
 ```
 
-`--enable` 会执行本机支持的 `codex plugin add codex-usage-meter@实际市场名称`。不带该参数时只登记文件，打印启用命令。默认个人市场由 Codex 隐式发现，无需执行 `plugin marketplace add`。
+**Windows：**
 
-然后在 Codex **新建任务**，输入“用 Codex 用量仪表查看本次会话”或“打开用量仪表并查询官方额度”。插件提供三个工具：`usage_snapshot`、`usage_account`、`usage_dashboard`。仪表链接在 MCP 服务退出后失效，可再次调用 `usage_dashboard`。
+```powershell
+.\.venv\Scripts\python.exe install.py --enable
+```
 
-如果 Codex 的 PATH 找不到 Python，将 `.mcp.json` 的 `command` 改成 Python 绝对路径，`args` 改成 `["./meter.py", "mcp"]`，保留 `cwd: "."`。当前默认配置使用插件根目录下的可执行 `bin/launch`；打包保留其执行权限。
+安装器将项目复制到用户主目录下的 `plugins/codex-usage-meter`，登记到 `.agents/plugins/marketplace.json`，保留已有市场配置。`--enable` 会调用本机 Codex CLI 启用插件；不带该参数则只登记并打印启用命令。
 
-## 配置
+Windows 安装器会为复制后的插件设置 Python 绝对路径和 Windows hook 命令，不需要 `sh` 或 `python3` 别名。macOS 默认使用 `bin/launch`；如果 Codex 找不到 Python，可在安装后的 `.mcp.json` 中将 `command` 改为 Python 绝对路径、`args` 改为 `["./meter.py", "mcp"]`，保留 `cwd: "."`。
 
-| 配置 | 默认与用途 |
+启用后，在 Codex 新建任务，输入：
+
+> 查看本次会话的 token 用量。
+>
+> 打开用量仪表并查询官方剩余额度。
+>
+> 打开最近活跃会话的用量小面板。
+
+插件提供的工具：
+
+| 工具 | 用途 |
 | --- | --- |
-| `CODEX_HOME` | `~/.codex`，读取 `sessions/` 与 `archived_sessions/` |
-| `CODEX_USAGE_CODEX` | 不设置时在 PATH 找 `codex`；设置时必须为可执行文件路径，不是 shell 命令 |
-| `--home` | 显式指定状态目录，优先于环境变量；同一目录传给官方 App Server |
-| `serve --port` | 默认 0，由系统分配空闲本机端口 |
+| `usage_snapshot` | 本地 token 统计与会话明细 |
+| `usage_account` | 官方账号限额、重置时间及可用的用量估算 |
+| `usage_dashboard` | 打开完整仪表，或以 `view="panel"` 打开精简列表 |
 
-官方账号查询需要本机 Codex 可正常启动并已登录。插件使用 `codex app-server` 的标准 JSON-RPC 初始化和查询，不解析 `auth.json`、不提取 OAuth token、不调用私有 ChatGPT HTTP 地址。App Server 自己可能维护其状态数据库或刷新认证，因此需要其正常目录权限。
+浏览器链接在 MCP 服务退出后失效，再次请求打开仪表即可获得新链接。
 
-本项目实测客户端为 `codex-cli 0.153.0`。更早客户端可能没有账号用量/会话估算能力，查询失败会显示原因，日志展示仍可独立运行。纯 API key 模式不保证可用 ChatGPT 账号限额；不会用 API 组织账单冒充订阅余额。
+## 常见问题
 
-## 精度与算法
+### 窗口不见了，顶部也没有入口
 
-- **会话累计**：日志最近 `total_token_usage` 快照，绝不累加全部累计快照。可能包含恢复或分叉继承的历史；不等于本轮。
-- **模型调用**：优先展示官方客户端日志的 `last_token_usage`。没有上游 response/request ID，所以标签是“已记录调用”，不保证覆盖每次重试和计费项目。
-- **轮次**：按 `turn_id` 汇总观察到的区间，空轮次显示未知。一次用户消息通常包括多次模型调用。
-- **区间差额**：相邻累计值差额与 last 不一致时显示“区间”，不把它冒充单次调用。缺失分项保留 null。
-- **本机小计**：对观察区间去重求和。相同会话的活动/归档副本只取一份；复制历史按时间戳、累计值及 last 指纹去重。没有全局官方 request ID，因此不能证明跨设备/修改过的副本绝不重叠。
-- **部分历史**：首次累计大于 last 时只把 last 计入可归因小计，先前部分不强行归到当前轮。计数回退的区间不计入，并显示警告。缺失数据不会被估算补全。
-- **子项**：缓存读取、缓存写入属于输入细分，推理属于输出细分，不重复加到总计。无字段不等于 0。
-- **限额**：优先 `rateLimitsByLimitId`，兼容旧 `rateLimits`；剩余比例 = `clamp(100-usedPercent,0,100)`。显示查询/观察时间，重置后要求重新查询，不自行填满。
-- **会话额度估算**：仅使用官方 `threadUsage` 的 `estimatedUsage*Micros`，除以 1,000,000 显示；始终标为估算。null 表示不可获取。
-- **总量范围**：本机日志可能跨登录账号，不能和当前账号累计简单相加。远程任务、本机已删除日志、未刷盘输出、工具单独费用可能不在其中。当前轮最终回答的 tokens 要等回答完成后刷新才能看到。
+macOS 先点 Dock 中的「Codex 用量」；Windows 先检查任务栏及托盘折叠菜单。仍找不到时，重新运行本节前面的 `floating.py show --thread 实际ID`，会恢复共用窗口。
 
-详见 [官方能力核实](docs/CAPABILITIES.md) 与 [测试记录](docs/VALIDATION.md)。
+Windows 托盘初始化失败时，关闭按钮会改为最小化到任务栏，避免没有恢复入口。
 
-## 测试
+### 没有自动启动
+
+确认已经安装桌面窗口、注册并信任 hook，再在新会话发送消息。仅点击切换会话不会触发 hook。如果之前选择过“退出并暂停自动打开”，先运行 `show` 恢复。
+
+### 列表为空，或者看不到旧会话
+
+精简列表只显示最近 30 分钟有日志更新的会话；目录最多检查最新 100 个会话。历史会话请使用 `meter.py serve` 打开完整仪表，再按需加载。
+
+### 额度显示 `—`，但 token 正常
+
+本地日志统计和官方额度查询彼此独立。先确认 `codex --version` 可运行且 Codex 已登录，等待后台额度刷新或重新打开窗口。CLI 不在 PATH 时，设置 `CODEX_USAGE_CODEX` 为其可执行文件的完整路径。
+
+官方未返回的数据不会估算补齐；纯 API key 登录不保证返回 ChatGPT 订阅额度。
+
+### 点击标题没有打开 Codex
+
+确认当前系统已安装 Codex 桌面应用，并注册了 `codex://` 链接处理器。Windows 不应从 WSL 启动窗口。Windows 的 WebView2 启动与桥接有 CI 覆盖，但真实桌面上的焦点、托盘位置和 Codex 跳转体验仍需实机验证。
+
+### 浏览器提示连接失败
+
+后台服务可能已退出或重启。重新运行 `meter.py serve`，打开新打印的链接；旧端口和访问密钥不能继续使用。
+
+### 安装时提示插件目录已经存在
+
+安装器不会覆盖旧插件。请按下面的更新流程操作，不要直接删除整个个人市场配置或覆盖其他插件。
+
+## 配置与命令行
+
+| 配置 | 用途 |
+| --- | --- |
+| `CODEX_HOME` | Codex 日志与状态目录，默认用户主目录下的 `.codex` |
+| `CODEX_USAGE_CODEX` | Codex CLI 可执行文件路径，不是整条 shell 命令 |
+| `CODEX_USAGE_DATA` | 桌面运行数据目录；不要指向公共或共享目录 |
+| `meter.py --home 路径` | 为本次命令指定 Codex 状态目录，需放在子命令前 |
+| `serve --port 端口` | HTTP 端口，默认 `0` 表示自动分配 |
+
+macOS 桌面运行数据默认位于 `~/Library/Application Support/CodexUsageMeter`；Windows 默认位于 `%LOCALAPPDATA%\CodexUsageMeter`。Windows 使用当前用户目录的权限；macOS 密钥文件权限为 0600。
+
+以下示例使用 `python3`；Windows 换成 `py -3`，或已创建环境的 `.\.venv\Scripts\python.exe`：
 
 ```sh
-python3 -m unittest discover -s tests -v
+# 打开完整仪表并选中指定会话
+python3 meter.py serve --thread YOUR_CODEX_THREAD_ID
+
+# 打开浏览器精简列表
+python3 meter.py serve --thread YOUR_CODEX_THREAD_ID --view panel
+
+# 按需读取最近 4 个会话，输出 JSON
+python3 meter.py snapshot --limit 4
+
+# 查询指定会话或官方账号数据
+python3 meter.py snapshot --thread YOUR_CODEX_THREAD_ID
+python3 meter.py account --thread YOUR_CODEX_THREAD_ID
+
+# 使用自定义 Codex 数据目录
+python3 meter.py --home /path/to/codex-home serve
 ```
 
-所有自动测试使用临时合成数据，不登录、不请求模型。HTTP 测试需要监听本机临时端口；受限沙箱中请允许该能力后重跑。JavaScript 可额外执行 `node --check web/app.js`；Node 仅用于开发验证，运行仪表不需要 Node。
+## 数据如何理解
 
-```sh
-# 只读实机验收（已登录的 Codex；不发起模型生成）
-python3 meter.py account
-```
+- **本轮**是当前用户轮次中已记录的用量；最终回复尚未写入日志时，数字可能继续增长。
+- **按模型累计**汇总日志中可归因的调用记录，可能与最新累计快照的范围不同（例如压缩后计数重置）；`jev/auto` 等路由别名按日志原样显示，不推测实际模型。
+- **会话累计**采用日志最新累计快照，不把累计快照重复相加，可能包含恢复或分叉继承的历史。
+- **本机小计**仅覆盖已加载记录，并做本地去重，不代表整个账号或所有设备的用量。
+- **缓存读取与推理**属于输入 / 输出的细分，不重复叠加；无法归因的区间不会冒充某个模型的精确调用。
+- **缺失值**显示 `—` 或“未记录”，不当作零。各会话图表独立缩放，比较时以数值为准。
+- **剩余额度**来自官方账号窗口；不同窗口不可相加，也不能从百分比反推剩余 token。
+- **会话费用 / credits**仅在官方返回估算时展示，并标记为估算，不作为实际账单。
+
+更多说明见 [能力与边界](docs/CAPABILITIES.md)。
 
 ## 更新与卸载
 
-首次安装器拒绝覆盖已有同名插件或市场条目。更新时先保留旧项目备份，再将新源码复制到 `~/plugins/codex-usage-meter`，使用附带辅助工具按现有市场名更新缓存版本：
+**更新源码运行的桌面窗口：** 先从菜单栏 / 托盘退出，更新本地源码，再执行对应平台的 `native/build.py`。Windows 如依赖有变化，先重新安装 `native/requirements-windows.txt`。最后运行 `floating.py show --thread 实际ID` 恢复。若脚本或 Python 路径变了，先移除旧 hook 条目，再重新注册和信任。
+
+**更新已安装插件：** 安装目录是源码副本，不会随源码目录自动更新。备份旧副本后更新其中的源码，保留 Windows 安装时生成的 `.mcp.json` 和 hook 中的正确绝对路径，再按现有市场名刷新缓存并启用：
 
 ```sh
 python3 tools/read_marketplace_name.py
 python3 tools/update_plugin_cachebuster.py ~/plugins/codex-usage-meter
-# 用上一步实际返回的市场名称，不要盲目假设为 personal
 codex plugin add codex-usage-meter@YOUR_MARKETPLACE_NAME
 ```
 
-重新安装后开启新任务。卸载用 `codex plugin remove`（以本机 `--help` 参数为准），或 Codex 插件页面的卸载操作；卸载插件不会删除原始 Codex 日志。项目不写入日志、不修改会话、不自动清理任何用户文件。
+`YOUR_MARKETPLACE_NAME` 使用第一条命令打印的实际值。Windows 使用相应 Python 命令，并将插件路径写为 `"$HOME\plugins\codex-usage-meter"`。重新启用后新建 Codex 任务。
 
-## 文件结构与隐私
+**卸载：** 先退出并暂停自动打开，在 Codex 插件页面卸载插件；如果注册过用户级 hook，只移除 `hooks.json` 中指向本项目 `floating.py hook` 的条目，保留其他 hooks。随后可删除本项目副本、专用虚拟环境及上述桌面运行数据目录。不要删除原始 `.codex/sessions` 日志。
 
-`meter.py` 是入口；`usage_meter/ledger.py` 解析与去重；`usage_meter/account.py` 是官方只读适配器；`web/` 是静态界面；`.mcp.json` 与 `.codex-plugin/plugin.json` 提供插件配置；`skills/` 是自然语言入口；`tests/` 是自动测试。
+## 开发与验证
 
-服务仅绑定 `127.0.0.1`，校验 Host 和临时密钥，不启用 CORS。界面无外部脚本、字体或统计追踪。仅所选会话返回用户消息和助手回复全文，支持按轮展开并对照 token；会话列表返回标题，不批量返回全部正文。标题优先使用本地状态数据库/会话索引；缺失时用首条用户消息摘要。系统/开发者指令、工具输出和内部推理不作为聊天正文展示。官方账号原始用量结果可能含账号标识；JSON 导出现在也包含所选对话正文；分享前检查范围。解析器按文件大小/修改时间缓存，变更文件重新读取；首次扫描较多日志可能耗时数秒。
+```sh
+python3 -m unittest discover -s tests -v
+node tests/test_charts.js
+node tests/test_panel.js
+node tests/test_quota_summary.js
+node --check web/panel.js
+```
 
-辅助脚本来源见 [工具来源](tools/PROVENANCE.md)。本项目不是 OpenAI 官方发布的计费产品。
+[GitHub Actions](https://github.com/gnuser/codex-usage-meter/actions) 在 Windows 与 macOS 上运行测试及平台构建 / 注册。Windows 额外运行 `tests/windows_smoke.py`，验证真实 WebView2 页面加载、标题更新与 JavaScript 到桌面的会话桥接；测试拦截系统打开操作，不会启动真实 Codex 或请求模型。
+
+HTTP 测试需要监听本机临时端口。历史版本验证见 [测试记录](docs/VALIDATION.md)，辅助工具来源见 [工具来源](tools/PROVENANCE.md)。
+
+## 隐私
+
+日志在本机读取，页面无外部脚本、字体或统计追踪。HTTP 服务只监听 `127.0.0.1`，校验 Host 和临时密钥；官方额度通过本机 `codex app-server` 查询，不直接解析认证文件。
+
+精简列表不返回对话正文；完整仪表可以展开所选会话的用户消息和助手回复，JSON 导出也可能包含这些正文和账号标识。分享导出文件前，请确认内容范围。项目不修改或自动删除原始会话日志。

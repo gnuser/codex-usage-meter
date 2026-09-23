@@ -65,6 +65,7 @@ def create_server(service, port=0):
             assets = {'/panel': ('panel.html', 'text/html; charset=utf-8'),
                       '/panel.js': ('panel.js', 'text/javascript; charset=utf-8'),
                       '/panel.css': ('panel.css', 'text/css; charset=utf-8'),
+                      '/quota-summary.js': ('quota-summary.js', 'text/javascript; charset=utf-8'),
                       '/': ('index.html', 'text/html; charset=utf-8'),
                       '/chart-math.js': ('chart-math.js', 'text/javascript; charset=utf-8'),
                       '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
@@ -90,7 +91,7 @@ def create_server(service, port=0):
                     return self.reply(400, {'error': str(exc)})
                 selected = data['selected']
                 if selected:
-                    selected = {k: selected[k] for k in ('id', 'title', 'total', 'updatedAt', 'warnings')} | {
+                    selected = {k: selected[k] for k in ('id', 'title', 'total', 'models', 'updatedAt', 'warnings')} | {
                         'turns': [dict(t, number=i + 1) for i, t in enumerate(data['selected']['turns'])][-10:]}
                 return self.reply(200, {'generatedAt': data['generatedAt'], 'selected': selected, 'errors': data['errors']})
             if url.path == '/api/snapshot':
