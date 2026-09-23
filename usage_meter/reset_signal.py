@@ -13,8 +13,8 @@ DONE = re.compile(r'\b(?:we|i)\s+(?:(?:have|just|already)\s+){0,3}(?:reset|grant
 
 def assess(posts, now=None):
     now = time.time() if now is None else now
-    unknown = {'state': 'unknown', 'label': '无明确重置信号', 'timeHint': '时间未知',
-               'reason': '仅按来源最近三条原文做规则判断，不代表账号已获重置。', 'postId': None}
+    unknown = {'state': 'unknown', 'label': 'No clear reset signal', 'timeHint': 'Time unknown',
+               'reason': 'Based on the latest three posts; does not confirm a reset for your account.', 'postId': None}
     for post in posts[:3]:
         if not 0 <= now - post['publishedAt'] <= 72 * 3600:
             continue
@@ -25,20 +25,20 @@ def assess(posts, now=None):
             continue
         # Negation/questions may contradict earlier posts; do not promote an old promise.
         if any(NEGATIVE.search(s) or '?' in s for s in relevant):
-            return dict(unknown, reason='最近相关发言含否定、延期或疑问，无法可靠预测。', postId=post['id'])
+            return dict(unknown, reason='The latest relevant post contains a denial, delay, or question; no reliable prediction.', postId=post['id'])
         evidence = ' '.join(relevant)
         if OTHER_RESET.search(evidence):
             continue
         uncertain = bool(UNCERTAIN.search(evidence))
         if not uncertain and DONE.search(evidence) and (re.search(r'\b(?:codex|usage|limits?|banked|accounts?)\b', text, re.I)):
-            return dict(unknown, state='reported', label='作者称已重置/正在发放',
-                        reason='公开发言不等于你的账号已经收到；以额度接口为准。', postId=post['id'])
+            return dict(unknown, state='reported', label='Author reports reset or rollout',
+                        reason='A public post does not confirm your account received a reset. Check account allowance.', postId=post['id'])
         if not uncertain and PLANNED.search(evidence):
-            state, label = 'announced', '作者预告重置'
+            state, label = 'announced', 'Author announces reset'
         else:
-            state, label = 'possible', '可能信号 · 未证实'
+            state, label = 'possible', 'Possible signal · Unconfirmed'
         when = TIME.findall(evidence)
         return dict(unknown, state=state, label=label, postId=post['id'],
-                    timeHint=('原文：' + ' / '.join(when) + '（仅引用原文，未换算时间）') if when else '时间未知',
-                    reason='仅原文规则推测；不生成概率，不推算未经公布的具体日期。')
+                    timeHint=('Quote: ' + ' / '.join(when) + ' (quoted, not converted to a date)') if when else 'Time unknown',
+                    reason='Text-based signal only; no probability or unannounced date inferred.')
     return unknown

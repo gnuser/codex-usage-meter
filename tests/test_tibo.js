@@ -40,7 +40,7 @@ const context = {
       source: 'Chrome · x.com',
       stale: true,
       error: '页面读取不完整',
-      signal: { label: '数据待更新 · 暂不预测', timeHint: '时间未知' },
+      signal: { label: 'Awaiting data · No prediction', timeHint: 'Time unknown' },
       posts: [{ id: '123', publishedAt: 1700000000, text: '<script>unsafe</script>' }],
     }),
   }),
@@ -50,7 +50,7 @@ vm.runInContext(fs.readFileSync('web/tibo.js', 'utf8'), context);
 (async () => {
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(nodes.tiboDetails.hidden, true);
-  assert.ok(nodes.tiboToggle.textContent.includes('暂不预测'));
+  assert.ok(nodes.tiboToggle.textContent.includes('No prediction'));
   nodes.tiboToggle.onclick();
   assert.equal(nodes.tiboDetails.hidden, false);
   const article = nodes.tiboDetails.children.at(-1);

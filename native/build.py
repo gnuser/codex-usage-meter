@@ -32,7 +32,7 @@ def build(folder):
                     '-framework', 'AppKit', '-framework', 'WebKit'], check=True)
     with (contents / 'Info.plist').open('wb') as stream:
         plistlib.dump({'CFBundleExecutable': 'CodexUsageMeter', 'CFBundleIdentifier': 'local.codex.usage-meter',
-                      'CFBundleName': 'Codex 用量', 'CFBundlePackageType': 'APPL',
+                      'CFBundleName': 'Codex Usage', 'CFBundlePackageType': 'APPL',
                       'CFBundleVersion': '1', 'LSUIElement': True,
                       'NSAppTransportSecurity': {'NSAllowsLocalNetworking': True}}, stream)
     print(app)

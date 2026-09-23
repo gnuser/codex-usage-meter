@@ -45,7 +45,7 @@ def model_breakdown(events):
     for event in events:
         # A gap may cover several models; do not assign the whole gap to the last model.
         name = event.get('model') if event.get('quality') == 'last_reported_call' else None
-        name = name or '模型未知 / 区间无法归因'
+        name = name or 'Unknown model / Unattributed interval'
         groups.setdefault(name, []).append(event['usage'])
     return [{'model': name, 'usage': add(rows), 'records': len(rows)} for name, rows in groups.items()]
 
@@ -58,7 +58,7 @@ def message_text(payload):
         if item.get('type') in ('input_text', 'output_text', 'text') and isinstance(item.get('text'), str):
             parts.append(item['text'])
         elif item.get('type') in ('input_image', 'image'):
-            parts.append('[图片附件：本地日志未提供可展示正文]')
+            parts.append('[Image attachment: no displayable content in local log]')
     return '\n\n'.join(parts)
 
 
@@ -116,7 +116,7 @@ def parse(path, include_messages=False):
             for line_no, line in enumerate(stream, 1):
                 # Reading while Codex appends: retry incomplete tail on next scan.
                 if not line.endswith('\n'):
-                    result['warnings'].append('文件末尾尚未写完，等待下次刷新')
+                    result['warnings'].append('Log write in progress; waiting for next refresh')
                     break
                 try:
                     row = json.loads(line)
@@ -126,7 +126,7 @@ def parse(path, include_messages=False):
                     if not isinstance(payload, dict):
                         raise ValueError()
                 except ValueError:
-                    result['warnings'].append(f'第 {line_no} 行格式异常，已跳过')
+                    result['warnings'].append(f'Line {line_no} has invalid format; skipped')
                     continue
                 kind = row.get('type')
                 stamp = row.get('timestamp') if isinstance(row.get('timestamp'), str) else ''
@@ -174,7 +174,7 @@ def parse(path, include_messages=False):
                     continue
                 total, last = usage(info.get('total_token_usage')), usage(info.get('last_token_usage'))
                 if total['total_tokens'] is None:
-                    result['warnings'].append(f'第 {line_no} 行缺少累计 token，无法可靠去重，未计入')
+                    result['warnings'].append(f'Line {line_no} lacks cumulative tokens; excluded to avoid double counting')
                     continue
                 result['total'], result['updatedAt'] = total, stamp
                 if total['total_tokens'] == 0:
@@ -189,20 +189,20 @@ def parse(path, include_messages=False):
                 if previous is None:
                     delta = last
                     if total != last:
-                        result['warnings'].append('首条累计值含先前用量；仅最后一次调用计入可归因小计')
+                        result['warnings'].append('Initial cumulative value includes earlier usage; only the last call is attributed')
                 elif total['total_tokens'] < previous['total_tokens']:
-                    result['warnings'].append('累计计数回退，可能恢复/回滚；该区间未计入可归因小计')
+                    result['warnings'].append('Cumulative count decreased; interval excluded from attributed totals')
                     previous, previous_turn = total, turn
                     continue
                 else:
                     delta = subtract(total, previous)
                     if delta != last:
                         quality = 'interval_delta'
-                        result['warnings'].append('累计差额与 last 不同：按区间显示，不冒充单次模型调用')
+                        result['warnings'].append('Cumulative delta differs from last call; shown as an interval')
                 attribution = turn
                 if quality == 'interval_delta' and previous_turn != turn:
                     attribution = None
-                    result['warnings'].append('跨轮次区间无法精确归因：只计入本机小计，不计入单轮')
+                    result['warnings'].append('Cross-turn interval: included in local subtotal, not a single turn')
                 previous, previous_turn = total, turn
                 if delta['total_tokens'] is None:
                     continue
@@ -226,10 +226,10 @@ def parse(path, include_messages=False):
                 first_reply = next((m['line'] for m in item['messages'] if m['role'] == 'assistant'), float('inf'))
                 leading = [m for m in users if m['line'] < first_reply]
                 request = explicit or (leading[-1] if leading else users[0] if users else None)
-                item['preview'] = preview(request['text']) if request else '未记录用户消息'
+                item['preview'] = preview(request['text']) if request else 'No user message recorded'
             result['unattributedMessages'] = pending
     except (OSError, UnicodeError) as exc:
-        result['warnings'].append(f'日志不可读：{type(exc).__name__}')
+        result['warnings'].append(f'Unreadable log: {type(exc).__name__}')
     result['warnings'] = list(dict.fromkeys(result['warnings']))
     result['observedUsage'] = add(e['usage'] for e in result['events'])
     result['models'] = model_breakdown(result['events'])
@@ -270,7 +270,7 @@ class Ledger:
                 continue
         ordered = sorted(found, key=found.get, reverse=True)[:limit]
         titles = read_titles(self.home.resolve(), set(ordered)) if ordered else {}
-        return {'sessions': [{'id': key, 'title': ' '.join((titles.get(key) or '未命名会话').split())[:100], 'updatedAt': found[key]} for key in ordered],
+        return {'sessions': [{'id': key, 'title': ' '.join((titles.get(key) or 'Untitled conversation').split())[:100], 'updatedAt': found[key]} for key in ordered],
                 'hasMore': len(found) > limit}
 
     def snapshot(self, thread_id=None, limit=1, *, exact=False, include_messages=True):
@@ -294,7 +294,7 @@ class Ledger:
                         st = path.stat()
                         candidates.append((st.st_mtime_ns, str(path), path, (st.st_ino, st.st_size, st.st_mtime_ns)))
                     except OSError:
-                        errors.append('部分日志在扫描时移动或不可读')
+                        errors.append('Some logs moved or were unreadable during scan')
             candidates.sort(reverse=True)
             # Deduplicate standard rollout filenames before opening archive copies.
             files, ids = [], set()
@@ -331,20 +331,20 @@ class Ledger:
             selected_id = thread_id or (ordered[0]['id'] if ordered else None)
             selected = sessions.get(selected_id)
             titles = read_titles(self.home.resolve(), set(sessions)) if sessions else {}
-            ordered = [dict(s, title=titles.get(s['id']) or s['title'] or '未命名会话',
+            ordered = [dict(s, title=titles.get(s['id']) or s['title'] or 'Untitled conversation',
                             titleSource='local_metadata' if s['id'] in titles else 'first_message_preview') for s in ordered]
             if selected:
                 selected = parse(Path(selected['source']), include_messages=True) if include_messages else dict(selected)
-                selected['title'] = titles.get(selected_id) or selected['title'] or '未命名会话'
+                selected['title'] = titles.get(selected_id) or selected['title'] or 'Untitled conversation'
                 selected['titleSource'] = 'local_metadata' if selected_id in titles else 'first_message_preview'
-            return {'generatedAt': time.time(), 'scope': '仅已加载会话；非全部本机或账号用量',
+            return {'generatedAt': time.time(), 'scope': 'Loaded conversations only; not all local or account usage',
                     'selectedId': selected_id, 'selected': selected,
                     'sessions': [{k: v for k, v in s.items() if k not in ('events', 'turns')} for s in ordered],
                     'observedTotal': add(unique.values()), 'observedRecords': len(unique),
                     'errors': errors, 'files': len(loaded_paths),
                     'pagination': {'limit': limit, 'loaded': len(ordered), 'hasMore': consumed < len(files),
                                    'nextLimit': min(limit + 3, 1000)},
-                    'coverage': '仅统计已加载会话。未加载日志不读取正文、不参与累计；缺失用量不补猜。'}
+                    'coverage': 'Only loaded conversations are counted. Unloaded logs and missing usage are not estimated.'}
 
 
 def normalize_limits(response):

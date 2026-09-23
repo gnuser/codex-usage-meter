@@ -1,7 +1,7 @@
 const status = document.getElementById("status");
 const address = document.getElementById("address");
 chrome.storage.local.get("status").then((data) => {
-  status.textContent = data.status || "尚未连接";
+  status.textContent = data.status || "Not connected";
 });
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.status) status.textContent = changes.status.newValue;
@@ -18,7 +18,7 @@ document.getElementById("connect").onclick = async () => {
       url.password ||
       !key
     ) {
-      throw Error("请粘贴本机面板的完整地址");
+      throw Error("Paste the full local panel URL");
     }
     const response = await fetch(url.origin + "/api/tibo/pair", {
       method: "POST",
@@ -30,7 +30,7 @@ document.getElementById("connect").onclick = async () => {
       signal: AbortSignal.timeout(8000),
       redirect: "error",
     });
-    if (!response.ok) throw Error("连接失败，请确认服务已更新且面板地址有效");
+    if (!response.ok) throw Error("Connection failed. Check the service and panel URL.");
     const result = await response.json();
     // Store only the narrowly scoped write key, never the dashboard's read key.
     await chrome.storage.local.set({

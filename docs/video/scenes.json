@@ -1,0 +1,5 @@
+[
+  {"title":"Your usage, at a glance.","caption":"Recent conversations. Input and output tokens. Remaining allowance.","detail":"One small window. Everything you need.","voice":"See your Codex usage at a glance. Recent conversations, input and output tokens, and your remaining allowance, in one small window."},
+  {"title":"A closer look. One click.","caption":"Expand a conversation to see input and output usage by model.","detail":"More detail, only when you want it.","voice":"Want a closer look? Expand a conversation to see usage by model. The window grows with the details, then shrinks back."},
+  {"title":"More room to work.","caption":"Tuck it into the menu bar or system tray. Bring it back anytime.","detail":"macOS menu bar · Windows system tray","voice":"Need more room? Tuck the window into your menu bar or system tray. Bring it back whenever you need it."}
+]

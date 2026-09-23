@@ -97,7 +97,7 @@ class Desktop:
         self.stopped = threading.Event()
         self.tray_ready = threading.Event()
         self.quitting = False
-        self.summary = 'Codex · 活跃 — · 剩余 —'
+        self.summary = 'Codex · Active — · Left —'
         self.count, self.windows = None, []
         self.show_stamp = self.read_show()
 
@@ -185,7 +185,7 @@ class Desktop:
                     active = pool.submit(self.request, '/api/threads?limit=100'); next_active = now + 15
                 if quota is None and now >= next_quota:
                     quota = pool.submit(self.request, '/api/account'); next_quota = now + 300
-                summary = f'Codex · 活跃 {self.count if self.count is not None else "—"} · 剩余 {quota_text(self.windows, now)}'
+                summary = f'Codex · Active {self.count if self.count is not None else "—"} · Left {quota_text(self.windows, now)}'
                 if summary != self.summary:
                     self.summary = summary
                     self.icon.title = summary
@@ -206,7 +206,7 @@ def main(folder):
     bridge = Bridge(panel_url)
     webview.settings['ALLOW_DOWNLOADS'] = False
     webview.settings['ALLOW_FILE_URLS'] = False
-    window = webview.create_window('Codex 用量', panel_url, js_api=bridge, width=260, height=170,
+    window = webview.create_window('Codex Usage', panel_url, js_api=bridge, width=260, height=170,
                                    min_size=(240, 100), on_top=True, focus=False, background_color='#1b1d21')
     app.window = bridge._window = window
     image = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
@@ -215,9 +215,9 @@ def main(folder):
         draw.rounded_rectangle((x, 28-height, x+6, 28), radius=2, fill='#6bb69b')
     app.icon = pystray.Icon('CodexUsageMeter', image, app.summary, menu=pystray.Menu(
         pystray.MenuItem(lambda item: app.summary, None, enabled=False),
-        pystray.MenuItem('显示用量', app.show, default=True),
-        pystray.MenuItem('收起', app.hide),
-        pystray.MenuItem('退出并暂停自动打开', app.quit)))
+        pystray.MenuItem('Show usage', app.show, default=True),
+        pystray.MenuItem('Collapse', app.hide),
+        pystray.MenuItem('Quit and pause auto-open', app.quit)))
     window.events.closing += app.closing
     window.events.closed += app.stopped.set
     def started():

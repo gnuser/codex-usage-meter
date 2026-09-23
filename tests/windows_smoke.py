@@ -30,7 +30,7 @@ def smoke():
     set_title = Bridge.set_title
     def capture_title(bridge, title):
         result = set_title(bridge, title)
-        if title.startswith('周'):
+        if title.startswith('Week '):
             titled.set()
         return result
 
