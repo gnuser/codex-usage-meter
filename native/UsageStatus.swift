@@ -60,11 +60,11 @@ extension UsageApp {
         item.button?.title = "▥ \(count) · \(quota)"
         let windows = valid.map { value -> String in
             let minutes = (value["windowDurationMins"] as? Int) ?? 0
-            let label = minutes == 0 ? "窗口" : minutes % 1440 == 0 ? "\(minutes / 1440)天" : minutes % 60 == 0 ? "\(minutes / 60)小时" : "\(minutes)分钟"
-            return label + "剩余 " + String(format: "%.2f%%", value["remainingPercent"] as! Double)
+            let label = minutes == 0 ? "Window" : minutes % 1440 == 0 ? "\(minutes / 1440)d" : minutes % 60 == 0 ? "\(minutes / 60)h" : "\(minutes)m"
+            return label + " remaining " + String(format: "%.2f%%", value["remainingPercent"] as! Double)
         }.joined(separator: " · ")
-        let description = "30分钟内活跃 \(count) 个会话\n" + (windows.isEmpty ? "额度暂不可用" : windows) + "\n显示最低剩余窗口 · 点击展开"
+        let description = "Active in 30 min: \(count)\n" + (windows.isEmpty ? "Allowance unavailable" : windows) + "\nLowest remaining allowance · Click to expand"
         item.button?.toolTip = description
-        item.button?.setAccessibilityLabel("Codex 用量：活跃 \(count)，剩余 \(quota)，点击展开")
+        item.button?.setAccessibilityLabel("Codex Usage: \(count) active, \(quota) left. Click to expand")
     }
 }

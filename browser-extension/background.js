@@ -6,7 +6,7 @@ let queue = Promise.resolve();
 function serial(action) {
   queue = queue
     .then(action, action)
-    .catch(() => status("读取失败；请立即更新重试"));
+    .catch(() => status("Read failed; click Refresh now to retry"));
   return queue;
 }
 async function status(value) {
@@ -30,7 +30,7 @@ async function send(config, payload) {
     signal: AbortSignal.timeout(8000),
     redirect: "error",
   });
-  if (!response.ok) throw Error("本地连接失效，请重新配对");
+  if (!response.ok) throw Error("Local connection expired; please pair again");
 }
 async function finish(cycle) {
   const { config } = await chrome.storage.local.get("config");
@@ -44,8 +44,8 @@ async function finish(cycle) {
   await send(config, { posts, complete });
   await status(
     complete
-      ? "已更新 · " + new Date().toLocaleTimeString()
-      : "读取不完整 · 主题帖子：" + posts.length + "条",
+      ? "Updated · " + new Date().toLocaleTimeString()
+      : "Incomplete · Original posts: " + posts.length + " posts",
   );
   await chrome.storage.local.remove("cycle");
   await chrome.alarms.clear(TIMEOUT);
@@ -57,7 +57,7 @@ async function refresh() {
     readerTab,
   } = await chrome.storage.local.get(["config", "readerTabs", "readerTab"]);
   if (!config) return;
-  await status("正在读取主题帖子…");
+  await status("Reading original posts…");
   // Retire only the old extension-owned Replies tab, never a repurposed tab.
   const repliesUrl = PAGE + "/with_replies";
   const obsolete = readerTabs[repliesUrl] || readerTab;
@@ -94,7 +94,7 @@ async function receive(message, sender) {
   if (message.action === "reader-ready") {
     job.ready = true;
     await chrome.storage.local.set({ cycle });
-    await status("页面已连接，等待公开时间线…");
+    await status("Page connected; waiting for timeline…");
     return;
   }
   if (!Array.isArray(message.batch?.posts) || message.batch.posts.length > 3)
@@ -107,7 +107,7 @@ async function stop() {
   await chrome.storage.local.remove(["config", "cycle"]);
   await chrome.alarms.clear(ALARM);
   await chrome.alarms.clear(TIMEOUT);
-  await status("已停止");
+  await status("Stopped");
 }
 async function start() {
   if (!(await chrome.storage.local.get("config")).config) return;

@@ -116,7 +116,7 @@ const context = {
             { model: 'model-a', usage: { input_tokens: input, output_tokens: output } },
             { model: 'model-b', usage: { input_tokens: 3000000, output_tokens: 4000 } },
             {
-              model: '模型未知 / 区间无法归因',
+              model: 'Unknown model / Unattributed interval',
               usage: { input_tokens: null, output_tokens: null },
             },
           ],
@@ -140,16 +140,16 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   await window.refreshUsage();
   assert.equal(reads, 1, 'native heartbeat bypasses stale hidden state');
   await context.refreshQuota();
-  assert.ok(nodes.resetSummary.textContent.includes('手动重置可用 3次'));
-  assert.ok(nodes.resetSummary.textContent.includes('最近资格到期：'));
-  assert.ok(nodes.resetSummary.textContent.includes('（2时0分）'));
-  assert.ok(nodes.resetSummary.textContent.includes('下次自动重置 '));
-  assert.ok(document.title.startsWith('周45% · '));
-  assert.ok(document.title.endsWith('1天0时后重置'));
-  assert.ok(nodes.resetStatus.textContent.startsWith('手动重置 3次'));
-  assert.equal(QuotaSummary.countdown(Date.now() / 1000 - 1), '已到期');
+  assert.ok(nodes.resetSummary.textContent.includes('Available resets: 3'));
+  assert.ok(nodes.resetSummary.textContent.includes('Next credit expiry: '));
+  assert.ok(nodes.resetSummary.textContent.includes('(2h 0m)'));
+  assert.ok(nodes.resetSummary.textContent.includes('Next automatic reset: '));
+  assert.ok(document.title.startsWith('Week 45% · '));
+  assert.ok(document.title.endsWith('Reset 1d 0h'));
+  assert.ok(nodes.resetStatus.textContent.startsWith('Resets 3'));
+  assert.equal(QuotaSummary.countdown(Date.now() / 1000 - 1), 'Expired');
   assert.equal(QuotaSummary.countdown(null), '—');
-  assert.ok(nodes.resetStatus.textContent.endsWith('2时0分后过期'));
+  assert.ok(nodes.resetStatus.textContent.endsWith('2h 0m'));
   assert.ok(!document.title.includes('恢复'));
   releaseAccount = true;
   const pending = context.refreshQuota();
@@ -165,7 +165,7 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   await pending;
   assert.equal(nodes.resetSummary.hidden, true, 'late response preserves collapsed state');
   const card = () => nodes.sessionCards.children[0];
-  assert.ok(card().children.some((n) => n.textContent === '本轮 输入 1.00K · 输出 200.00'));
+  assert.ok(card().children.some((n) => n.textContent === 'In 1.00K · Out 200.00'));
   const details = () => card().children.find((n) => n.className === 'model-details');
   assert.equal(details().children[1].children[0].textContent, 'model-a');
   assert.equal(details().children[2].children[1].textContent, 'input 3.00M · output 4.00K');
@@ -179,7 +179,7 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   output = 600;
   await window.refreshUsage();
   assert.equal(reads, 2);
-  assert.ok(card().children.some((n) => n.textContent === '本轮 输入 2.50K · 输出 600.00'));
+  assert.ok(card().children.some((n) => n.textContent === 'In 2.50K · Out 600.00'));
   assert.equal(card(), original, 'keep article during refresh');
   assert.equal(toggle(), originalToggle, 'keep the pressed toggle attached during refresh');
   assert.equal(toggle().detachments, 0, 'do not move or detach the pressed button');
@@ -190,7 +190,7 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   input = null;
   output = null;
   await window.refreshUsage();
-  assert.ok(card().children.some((n) => n.textContent === '本轮 输入 — · 输出 —'));
+  assert.ok(card().children.some((n) => n.textContent === 'In — · Out —'));
   assert.equal(toggle()['aria-expanded'], 'false');
   assert.equal(typeof nodes.activityCount.onclick, 'function');
   console.log('Panel recovery, refreshed input/output and unknown-value tests passed');

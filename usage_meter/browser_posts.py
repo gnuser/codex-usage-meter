@@ -13,7 +13,7 @@ class BrowserPosts:
         self.lock = threading.Lock()
         self.posts = []
         self.fetched = None
-        self.error = '等待 Chrome 扩展连接'
+        self.error = 'Waiting for the Chrome extension'
         self.complete = False
 
     def ingest(self, data):
@@ -44,7 +44,7 @@ class BrowserPosts:
                 self.posts = sorted(normalized, key=lambda p: (p['publishedAt'], int(p['id'])), reverse=True)
                 self.fetched = now
             self.complete = complete
-            self.error = None if complete else '页面读取不完整；请检查 X 登录、加载状态或展开长文'
+            self.error = None if complete else 'Incomplete data; check X sign-in and page loading.'
 
     def snapshot(self):
         with self.lock:
@@ -53,7 +53,7 @@ class BrowserPosts:
                      or not self.posts or now - self.posts[0]['publishedAt'] > 72 * 3600)
             signal = assess([] if stale else self.posts, now)
             if stale:
-                signal['label'] = '数据待更新 · 暂不预测'
+                signal['label'] = 'Awaiting data · No prediction'
             return {'account': 'thsottiaux', 'source': 'Chrome · x.com',
                     'sourceIsMirror': False, 'latestGuaranteed': False, 'posts': list(self.posts),
                     'fetchedAt': self.fetched, 'loading': False, 'stale': stale,

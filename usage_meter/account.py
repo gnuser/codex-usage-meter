@@ -14,7 +14,7 @@ class AppServer:
         executable = os.environ.get('CODEX_USAGE_CODEX') or shutil.which('codex')
         if command is None:
             if not executable:
-                raise RuntimeError('未找到 codex；请设置 CODEX_USAGE_CODEX 为可执行文件路径')
+                raise RuntimeError('Codex not found; set CODEX_USAGE_CODEX to its executable path')
             command = [executable, 'app-server']
         env = os.environ.copy()
         if home is not None:
@@ -54,18 +54,18 @@ class AppServer:
         while True:
             remaining = end - time.monotonic()
             if remaining <= 0:
-                raise RuntimeError('App Server 查询超时')
+                raise RuntimeError('App Server request timed out')
             try:
                 message = self.messages.get(timeout=remaining)
             except queue.Empty as exc:
-                raise RuntimeError('App Server 查询超时') from exc
+                raise RuntimeError('App Server request timed out') from exc
             if message is None:
-                raise RuntimeError('App Server 已退出：请检查 Codex 登录、配置和本地状态目录权限')
+                raise RuntimeError('App Server exited; check Codex sign-in, configuration, and local directory permissions')
             if message.get('id') == self.seq and 'method' not in message:
                 if 'error' in message:
                     error = message['error']
                     # Do not return arbitrary server text that could contain credentials.
-                    raise RuntimeError(f'官方接口不可用（错误码 {error.get("code", "unknown")}）；可能为版本、认证或权限限制')
+                    raise RuntimeError(f'Account API unavailable (code {error.get("code", "unknown")}); check version, authentication, or permissions')
                 return message.get('result')
             if 'method' in message and 'id' in message:
                 self.send({'id': message['id'], 'error': {'code': -32601, 'message': 'Read-only client'}})

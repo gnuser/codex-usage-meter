@@ -10,7 +10,7 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     let folder: URL
     var panel: NSPanel!
     var web: WKWebView!
-    let titleLabel = NSTextField(labelWithString: "Codex 用量")
+    let titleLabel = NSTextField(labelWithString: "Codex Usage")
     let titleAccessory = NSTitlebarAccessoryViewController()
     var item: NSStatusItem!
     var statusMenu: NSMenu!
@@ -37,7 +37,7 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
         NSApp.setActivationPolicy(.regular)
         panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 240, height: 115),
                         styleMask: [.titled, .closable, .miniaturizable, .resizable, .nonactivatingPanel], backing: .buffered, defer: false)
-        panel.title = "Codex 用量"
+        panel.title = "Codex Usage"
         panel.titleVisibility = .hidden
         titleLabel.font = .systemFont(ofSize: 9, weight: .regular)
         titleLabel.textColor = .secondaryLabelColor
@@ -68,8 +68,8 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
                 button.target = self
                 button.action = #selector(hideWindow)
                 button.isEnabled = true
-                button.toolTip = "收起到菜单栏"
-                button.setAccessibilityLabel("收起到菜单栏")
+                button.toolTip = "Hide to menu bar"
+                button.setAccessibilityLabel("Hide to menu bar")
             }
         }
         panel.setFrameAutosaveName("CodexUsageMeterTinyWindow")
@@ -85,13 +85,13 @@ final class UsageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
         item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.title = "▥ — · —"
         item.button?.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
-        item.button?.toolTip = "Codex 用量 · 点击展开/收起，右键显示菜单"
-        item.button?.setAccessibilityLabel("Codex 用量：展开或收起")
+        item.button?.toolTip = "Codex Usage · Click to toggle; right-click for menu"
+        item.button?.setAccessibilityLabel("Codex Usage：Show or hide")
         item.button?.target = self
         item.button?.action = #selector(statusClicked)
         item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         let menu = NSMenu()
-        for (title, action) in [("显示用量窗口", #selector(showWindow)), ("收起到菜单栏", #selector(hideWindow)), ("退出并暂停自动打开", #selector(quitWindow))] {
+        for (title, action) in [("Show usage window", #selector(showWindow)), ("Hide to menu bar", #selector(hideWindow)), ("Quit and pause auto-open", #selector(quitWindow))] {
             let entry = NSMenuItem(title: title, action: action, keyEquivalent: "")
             entry.target = self; menu.addItem(entry)
         }

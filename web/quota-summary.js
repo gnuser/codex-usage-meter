@@ -7,11 +7,11 @@
   function countdown(until, now = Date.now()) {
     if (!timestamp(until)) return '—';
     const minutes = Math.ceil((until * 1000 - now) / 60000);
-    if (minutes <= 0) return '已到期';
+    if (minutes <= 0) return 'Expired';
     if (minutes >= 1440)
-      return Math.floor(minutes / 1440) + '天' + Math.floor((minutes % 1440) / 60) + '时';
-    if (minutes >= 60) return Math.floor(minutes / 60) + '时' + (minutes % 60) + '分';
-    return minutes + '分';
+      return Math.floor(minutes / 1440) + 'd ' + Math.floor((minutes % 1440) / 60) + 'h';
+    if (minutes >= 60) return Math.floor(minutes / 60) + 'h ' + (minutes % 60) + 'm';
+    return minutes + 'm';
   }
 
   function summarize(data, now = Date.now()) {
@@ -30,7 +30,7 @@
     const resets = windows.map((w) => w.resetsAt).filter(timestamp);
     const next = resets.length ? Math.min(...resets) : null;
     const date = (t) =>
-      new Date(t * 1000).toLocaleString('zh-CN', {
+      new Date(t * 1000).toLocaleString('en-US', {
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
@@ -39,16 +39,16 @@
       });
     const remaining = (w) =>
       timestamp(w.resetsAt) && w.resetsAt * 1000 <= now
-        ? '待刷新'
+        ? 'Refresh needed'
         : percentage(w.remainingPercent)
           ? w.remainingPercent.toFixed(2) + '%'
           : '—';
     const label = (w) => {
       const m = w.windowDurationMins;
-      if (m === 10080) return '周额度';
-      if (!Number.isFinite(m) || m <= 0) return '额度';
+      if (m === 10080) return 'Week';
+      if (!Number.isFinite(m) || m <= 0) return 'Allowance';
       return (
-        (m % 1440 === 0 ? m / 1440 + '天' : m % 60 === 0 ? m / 60 + 'h' : m + 'm') + '周期额度'
+        (m % 1440 === 0 ? m / 1440 + 'd' : m % 60 === 0 ? m / 60 + 'h' : m + 'm') + ' allowance'
       );
     };
     // Prefer the Codex bucket when an account has more than one weekly quota.
@@ -56,46 +56,46 @@
     const week = weekly.find((w) => w.limitId === 'codex') || weekly[0];
     const weekReset = timestamp(week?.resetsAt) ? week.resetsAt : null;
     const weekValue = week ? remaining(week) : '—';
-    const countText = count == null ? '—' : expired ? '待刷新' : count + '次';
+    const countText = count == null ? '—' : expired ? 'Refresh needed' : String(count);
     const title =
-      '周' +
+      'Week ' +
       (weekValue.endsWith('%') ? Math.round(week.remainingPercent) + '%' : weekValue) +
       ' · ' +
       (weekReset == null
-        ? '重置未知'
+        ? 'Reset unknown'
         : weekReset * 1000 <= now
-          ? '重置待刷新'
-          : countdown(weekReset, now) + '后重置');
+          ? 'Reset pending'
+          : 'Reset ' + countdown(weekReset, now).trim());
     const status =
-      '手动重置 ' +
+      'Resets ' +
       countText +
       (count > 0
-        ? ' · 最近资格 ' +
+        ? ' · Credit ' +
           (earliest == null
-            ? '到期未知'
-            : countdown(earliest, now) + (earliest * 1000 > now ? '后过期' : ''))
+            ? 'expiry unknown'
+            : (earliest * 1000 > now ? 'expires in ' : '') + countdown(earliest, now).trim())
         : '');
     const details =
       (next == null
-        ? '下次自动重置：未知'
-        : '下次自动重置 ' +
+        ? 'Next automatic reset: unknown'
+        : 'Next automatic reset: ' +
           date(next) +
-          '（' +
-          (next * 1000 <= now ? '待刷新' : '还剩' + countdown(next, now)) +
-          '）') +
-      '\n手动重置可用 ' +
+          ' (' +
+          (next * 1000 <= now ? 'Refresh needed' : 'in ' + countdown(next, now)) +
+          ')') +
+      '\nAvailable resets: ' +
       countText +
       (count > 0
-        ? '\n最近资格到期：' +
-          (earliest == null ? '未知' : date(earliest) + '（' + countdown(earliest, now) + '）')
+        ? '\nNext credit expiry: ' +
+          (earliest == null ? 'Unknown' : date(earliest) + ' (' + countdown(earliest, now) + ')')
         : '');
     return {
       title,
       status,
       details,
       summary: windows.length
-        ? windows.map((w) => label(w) + '剩余 ' + remaining(w)).join(' / ')
-        : '剩余 —',
+        ? windows.map((w) => label(w) + ' left ' + remaining(w)).join(' / ')
+        : 'Left —',
     };
   }
   const api = { countdown, summarize };

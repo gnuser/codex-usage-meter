@@ -65,7 +65,7 @@ class WindowsTests(unittest.TestCase):
         bridge = Bridge('http://127.0.0.1:1/panel#key=x', opener=Mock())
         bridge._window = Mock()
         bridge._window.get_current_url.return_value = bridge._panel_url
-        self.assertTrue(bridge.set_title('周45% · 4天后重置'))
+        self.assertTrue(bridge.set_title('Week 45% · 4天后重置'))
         for value in (None, 'x' * 181):
             with self.assertRaises(ValueError): bridge.set_title(value)
         bridge._window.get_current_url.return_value = 'https://example.com'

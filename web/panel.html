@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Codex 用量</title>
+    <title>Codex Usage</title>
     <link rel="stylesheet" href="/panel.css" />
     <script src="/chart-math.js" defer></script>
     <script src="/quota-summary.js" defer></script>
@@ -14,17 +14,17 @@
   <body>
     <main>
       <header>
-        <button id="activityCount" title="最近 30 分钟有日志更新的会话 · 点击刷新">活跃 —</button
-        ><button id="quotaSummary" title="账号共享剩余额度 · 点击刷新">剩余 —</button>
+        <button id="activityCount" title="Updated in the last 30 minutes · Click to refresh">Active —</button
+        ><button id="quotaSummary" title="Account allowance · Show or hide reset details">Left —</button>
       </header>
-      <div id="resetSummary" aria-live="polite">重置 —</div>
-      <div id="sessionCards" aria-label="活跃会话用量"></div>
+      <div id="resetSummary" aria-live="polite">Reset —</div>
+      <div id="sessionCards" aria-label="Recent conversation usage"></div>
       <p id="status" role="status" hidden></p>
       <section id="tibo">
-        <button id="tiboToggle" aria-expanded="false">Tibo · 读取中 ▸</button>
+        <button id="tiboToggle" aria-expanded="false">Tibo · Loading ▸</button>
         <div id="tiboDetails" hidden></div>
       </section>
-      <footer id="resetStatus">手动重置 —</footer>
+      <footer id="resetStatus">Resets —</footer>
     </main>
   </body>
 </html>

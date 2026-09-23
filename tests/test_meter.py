@@ -125,7 +125,7 @@ class LedgerTests(unittest.TestCase):
         self.write(self.head()+[event(tokens(400,80)),event(tokens(),stamp='2026-09-19T00:00:02Z')])
         r=parse(self.path)
         self.assertEqual(len(r['events']),1)
-        self.assertTrue(any('回退' in w for w in r['warnings']))
+        self.assertTrue(any('decreased' in w for w in r['warnings']))
 
     def test_missing_optional_is_not_zero(self):
         t=tokens();del t['cache_write_input_tokens']
@@ -255,7 +255,7 @@ class LedgerTests(unittest.TestCase):
             event(tokens(400,80),tokens(),stamp='2026-09-19T00:00:03Z')])
         r=parse(self.path,True)
         by_model={m['model']:m['usage']['total_tokens'] for m in r['models']}
-        self.assertEqual(by_model,{'test-model':120,'second-model':120,'模型未知 / 区间无法归因':240})
+        self.assertEqual(by_model,{'test-model':120,'second-model':120,'Unknown model / Unattributed interval':240})
         self.assertEqual(r['observedUsage']['total_tokens'],480)
         self.assertEqual(r['turns'][0]['models'],r['models'])
 
@@ -369,7 +369,7 @@ class IntegrationTests(unittest.TestCase):
                 url = response['structuredContent']['url']
                 self.assertIn('/panel#', url)
                 base = url.split('/panel#')[0]
-                self.assertIn('活跃会话用量', urlopen(base+'/panel').read().decode())
+                self.assertIn('Recent conversation usage', urlopen(base+'/panel').read().decode())
                 req = lambda path: Request(base+path, headers={'Authorization':'Bearer '+service.token})
                 with self.assertRaises(HTTPError): urlopen(base+'/api/panel?thread=one')
                 with self.assertRaises(HTTPError): urlopen(req('/api/panel'))

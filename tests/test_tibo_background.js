@@ -91,7 +91,7 @@ async function deliver(id, loadedAt, override = {}) {
   assert.equal(sent.length, 1);
   assert(sent[0].complete);
   assert(!state.cycle);
-  assert.match(state.status, /已更新/);
+  assert.match(state.status, /Updated/);
   state.readerTabs = { profile: 1 };
   listener(
     { action: "stop" },
@@ -100,7 +100,7 @@ async function deliver(id, loadedAt, override = {}) {
   );
   await vm.runInContext("queue", context);
   assert(!state.config);
-  assert.equal(state.status, "已停止");
+  assert.equal(state.status, "Stopped");
   assert(state.readerTabs, "retain owned tab identity for reuse after restart");
   console.log("Tibo durable cycle, old document and sender isolation passed");
 })().catch((error) => {

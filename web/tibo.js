@@ -13,21 +13,21 @@
     element.textContent = value;
     return element;
   };
-  const date = (stamp) => (stamp ? new Date(stamp * 1000).toLocaleString('zh-CN') : '尚未成功读取');
+  const date = (stamp) => (stamp ? new Date(stamp * 1000).toLocaleString('en-US') : 'Not fetched yet');
   function render() {
-    button.textContent = 'Tibo · ' + (data?.signal?.label || '读取中') + (expanded ? ' ▾' : ' ▸');
+    button.textContent = 'Tibo · ' + (data?.signal?.label || 'Loading') + (expanded ? ' ▾' : ' ▸');
     button.setAttribute('aria-expanded', String(expanded));
     details.hidden = !expanded;
     const rows = [
-      text('p', (data?.source || 'Chrome') + ' · 最近三条主题帖子'),
-      text('p', '更新：' + date(data?.fetchedAt)),
+      text('p', (data?.source || 'Chrome') + ' · Latest three original posts'),
+      text('p', 'Updated: ' + date(data?.fetchedAt)),
     ];
     if (data?.error) rows.push(text('p', data.error));
-    rows.push(text('p', data?.signal?.timeHint || '时间未知'));
+    rows.push(text('p', data?.signal?.timeHint || 'Time unknown'));
     if (data?.signal?.reason) rows.push(text('p', data.signal.reason));
     for (const post of data?.posts || []) {
       const item = text('article', '');
-      const link = text('a', date(post.publishedAt) + ' · 原文 ↗');
+      const link = text('a', date(post.publishedAt) + ' · View post ↗');
       link.href = 'https://x.com/thsottiaux/status/' + post.id;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
@@ -41,14 +41,14 @@
           try {
             await window.pywebview.api.open_post(link.href);
           } catch {
-            button.textContent = 'Tibo · 原文打开失败';
+            button.textContent = 'Tibo · Could not open post';
           }
         }
       };
       item.append(link, text('p', post.text));
       rows.push(item);
     }
-    if (!data?.posts?.length) rows.push(text('p', '尚无可验证的动态；不会使用旧搜索结果填充。'));
+    if (!data?.posts?.length) rows.push(text('p', 'No verified posts yet.'));
     details.replaceChildren(...rows);
   }
   button.onclick = () => {
@@ -71,8 +71,8 @@
     } catch {
       data = {
         ...data,
-        error: '本地状态读取失败',
-        signal: { label: '数据待更新 · 暂不预测', timeHint: '时间未知' },
+        error: 'Could not read local status',
+        signal: { label: 'Awaiting data · No prediction', timeHint: 'Time unknown' },
       };
     } finally {
       busy = false;

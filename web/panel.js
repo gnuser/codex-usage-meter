@@ -24,8 +24,8 @@ function bindToggle(card, toggle) {
     const expanded = card.dataset.expanded === 'true';
     toggle.textContent = expanded ? '▾' : '▸';
     toggle.setAttribute('aria-expanded', String(expanded));
-    toggle.setAttribute('aria-label', (expanded ? '收起' : '展开') + '模型用量');
-    toggle.title = expanded ? '收起模型用量' : '展开模型用量';
+    toggle.setAttribute('aria-label', (expanded ? 'Collapse' : 'Expand') + ' model usage');
+    toggle.title = expanded ? 'Collapse model usage' : 'Expand model usage';
   };
   toggle.onclick = () => {
     card.dataset.expanded = String(card.dataset.expanded !== 'true');
@@ -35,7 +35,7 @@ function bindToggle(card, toggle) {
 }
 async function request(path, signal) {
   const res = await fetch(path, { headers: { Authorization: 'Bearer ' + key }, signal });
-  if (!res.ok) throw Error('读取失败');
+  if (!res.ok) throw Error('Read failed');
   return res.json();
 }
 async function refresh(force = false) {
@@ -55,7 +55,7 @@ async function refresh(force = false) {
       card.dataset.session = session.id;
       const link = node('a', session.title, 'session-title');
       link.href = 'codex://threads/' + encodeURIComponent(session.id);
-      link.title = '打开对话：' + session.title;
+      link.title = 'Open conversation: ' + session.title;
       link.onclick = async (e) => {
         if (nativeControl) {
           e.preventDefault();
@@ -65,7 +65,7 @@ async function refresh(force = false) {
           try {
             await window.pywebview.api.open_thread(session.id);
           } catch (error) {
-            status('无法打开对话，请确认已安装 Codex');
+            status('Unable to open conversation. Check that Codex is installed.');
           }
         }
       };
@@ -76,29 +76,29 @@ async function refresh(force = false) {
             controller.signal,
           ),
           item = payload.selected;
-        if (item && item.id !== session.id) throw Error('会话不匹配');
+        if (item && item.id !== session.id) throw Error('Conversation mismatch');
         const turns = item?.turns || [],
           values = turns.map((t) => UsageCharts.metric(t.usage)),
           max = Math.max(0, ...values.map((v) => v ?? 0));
         const summary = node(
           'div',
-          '本轮 ' +
+          'Turn ' +
             fmt(turns.at(-1)?.usage.total_tokens) +
-            ' · 累计 ' +
+            ' · Total ' +
             fmt(item?.total.total_tokens),
           'session-totals',
         );
-        summary.title = 'tokens · ' + (item?.warnings?.join('；') || '用量以日志记录为准');
+        summary.title = 'tokens · ' + (item?.warnings?.join('；') || 'Usage as recorded in local logs');
         card.append(summary);
         const current = turns.at(-1)?.usage || {};
         const io = node(
           'div',
-          '本轮 输入 ' + fmt(current.input_tokens) + ' · 输出 ' + fmt(current.output_tokens),
+          'In ' + fmt(current.input_tokens) + ' · Out ' + fmt(current.output_tokens),
           'session-io',
         );
         const details = node('div', null, 'model-details');
-        details.setAttribute('aria-label', '本会话各模型累计用量');
-        details.append(node('div', '模型累计 · tokens', 'model-heading'));
+        details.setAttribute('aria-label', 'Model totals for this conversation');
+        details.append(node('div', 'Model totals · tokens', 'model-heading'));
         for (const m of item?.models || []) {
           const row = node('div', null, 'model-row');
           row.append(
@@ -110,13 +110,13 @@ async function refresh(force = false) {
           );
           details.append(row);
         }
-        if (!item?.models?.length) details.append(node('div', '暂无模型用量记录'));
+        if (!item?.models?.length) details.append(node('div', 'No model usage recorded'));
         const toggle = node('button', '▸', 'model-toggle');
         toggle.type = 'button';
         bindToggle(card, toggle);
         card.append(io, toggle, details);
         const bars = node('div', null, 'mini-bars');
-        bars.setAttribute('aria-label', '最近 10 轮用量，各会话独立缩放');
+        bars.setAttribute('aria-label', 'Last 10 turns; each conversation scales independently');
         turns.forEach((t, i) => {
           const col = node(
             'button',
@@ -127,10 +127,10 @@ async function refresh(force = false) {
           );
           col.type = 'button';
           col.title =
-            '第 ' +
+            'Turn ' +
             t.number +
-            ' 轮：' +
-            (values[i] == null ? '未记录' : values[i].toLocaleString('zh-CN') + ' tokens');
+            ': ' +
+            (values[i] == null ? 'Not recorded' : values[i].toLocaleString('en-US') + ' tokens');
           col.setAttribute('aria-label', col.title);
           const fill = node('span', null, 'fill');
           fill.style.height = (max && values[i] != null ? (values[i] / max) * 100 : 0) + '%';
@@ -140,7 +140,7 @@ async function refresh(force = false) {
         card.append(bars);
       } catch (error) {
         if (error.name === 'AbortError') throw error;
-        card.append(node('div', '用量暂不可用', 'session-totals'));
+        card.append(node('div', 'Usage unavailable', 'session-totals'));
       }
       cards.push(card);
     }
@@ -172,12 +172,12 @@ async function refresh(force = false) {
       retained.some((c, i) => c !== $('sessionCards').children[i])
     )
       $('sessionCards').replaceChildren(...retained);
-    $('activityCount').textContent = '活跃 ' + sessions.length;
+    $('activityCount').textContent = 'Active ' + sessions.length;
     $('activityCount').title =
-      '最近 30 分钟活跃会话 · 更新于 ' + new Date().toLocaleTimeString('zh-CN') + ' · 点击刷新';
-    status(sessions.length ? '' : '暂无活跃会话');
+      'Active in the last 30 minutes · Updated ' + new Date().toLocaleTimeString('en-US') + ' · Click to refresh';
+    status(sessions.length ? '' : 'No recent activity');
   } catch (error) {
-    status('更新失败 · 将重试');
+    status('Update failed · Retrying');
   } finally {
     clearTimeout(timeout);
     busy = false;
@@ -189,7 +189,7 @@ function renderResetSummary() {
   $('resetSummary').textContent = view.details;
   $('resetStatus').textContent = view.status;
   $('quotaSummary').textContent = view.summary;
-  $('quotaSummary').title = '账号共享额度 · 点击展开/收起重置详情';
+  $('quotaSummary').title = 'Account allowance · Show or hide reset details';
   $('resetSummary').hidden = !window.showResetDetails;
   $('quotaSummary').setAttribute('aria-expanded', String(!!window.showResetDetails));
   if (document.title === view.title) return;
@@ -239,4 +239,4 @@ window.addEventListener('pagehide', () => clearTimeout(timer));
 if (key) {
   refresh();
   refreshQuota();
-} else status('请重新打开面板');
+} else status('Please reopen the panel');

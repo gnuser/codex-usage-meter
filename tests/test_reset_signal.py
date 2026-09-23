@@ -11,7 +11,7 @@ class PublicPostTests(unittest.TestCase):
         planned = assess([self.post('We will reset Codex limits tomorrow.')], 1000000)
         self.assertEqual(planned['state'], 'announced')
         self.assertIn('tomorrow', planned['timeHint'])
-        self.assertIn('未换算', planned['timeHint'])
+        self.assertIn('not converted', planned['timeHint'])
         self.assertEqual(assess([self.post('We have reset Codex usage limits.')], 1000000)['state'], 'reported')
         self.assertEqual(assess([self.post('We will not reset Codex limits tomorrow.')], 1000000)['state'], 'unknown')
         self.assertEqual(assess([self.post('Will we reset Codex limits?')], 1000000)['state'], 'unknown')
