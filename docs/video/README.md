@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-[Home](../../README.md) · [Watch the video](../media/getting-started.mp4) · [English subtitles](../media/getting-started.srt)
+[Home](../../README.md) · [Watch the video](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](../media/getting-started.srt)
 
 - About 29 seconds, 1280×720 at 24 fps, H.264 video and AAC English audio.
 - Three essentials: check usage, expand model details, and hide the window.
