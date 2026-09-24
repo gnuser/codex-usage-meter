@@ -113,18 +113,18 @@ const context = {
         selected: {
           id: 'one',
           models: [
-            { model: 'model-a', usage: { input_tokens: input, output_tokens: output } },
+            { model: 'model-a', usage: { input_tokens: input, cached_input_tokens: 800, output_tokens: output } },
             { model: 'model-b', usage: { input_tokens: 3000000, output_tokens: 4000 } },
             {
               model: 'Unknown model / Unattributed interval',
               usage: { input_tokens: null, output_tokens: null },
             },
           ],
-          total: { input_tokens: input, output_tokens: output, total_tokens: input + output },
+          total: { input_tokens: input, cached_input_tokens: 800, output_tokens: output, total_tokens: input + output },
           turns: [
             {
               number: 1,
-              usage: { input_tokens: input, output_tokens: output, total_tokens: input + output },
+              usage: { input_tokens: input, cached_input_tokens: 800, output_tokens: output, total_tokens: input + output },
             },
           ],
         },
@@ -165,10 +165,10 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   await pending;
   assert.equal(nodes.resetSummary.hidden, true, 'late response preserves collapsed state');
   const card = () => nodes.sessionCards.children[0];
-  assert.ok(card().children.some((n) => n.textContent === 'In 1.00K · Out 200.00'));
+  assert.ok(card().children.some((n) => n.textContent === 'In 1K · Out 200 · Cache 80%'));
   const details = () => card().children.find((n) => n.className === 'model-details');
   assert.equal(details().children[1].children[0].textContent, 'model-a');
-  assert.equal(details().children[2].children[1].textContent, 'input 3.00M · output 4.00K');
+  assert.equal(details().children[2].children[1].textContent, 'In 3M · Out 4K · Cache —');
   const original = card();
   const originalToggle = card().children.find((n) => n.className === 'model-toggle');
   const toggle = () => card().children.find((n) => n.className === 'model-toggle');
@@ -179,18 +179,18 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   output = 600;
   await window.refreshUsage();
   assert.equal(reads, 2);
-  assert.ok(card().children.some((n) => n.textContent === 'In 2.50K · Out 600.00'));
+  assert.ok(card().children.some((n) => n.textContent === 'In 3K · Out 600 · Cache 32%'));
   assert.equal(card(), original, 'keep article during refresh');
   assert.equal(toggle(), originalToggle, 'keep the pressed toggle attached during refresh');
   assert.equal(toggle().detachments, 0, 'do not move or detach the pressed button');
   assert.equal(card().dataset.expanded, 'true');
-  assert.equal(details().children[1].children[1].textContent, 'input 2.50K · output 600.00');
+  assert.equal(details().children[1].children[1].textContent, 'In 3K · Out 600 · Cache 32%');
   toggle().onclick();
   assert.equal(card().dataset.expanded, 'false');
   input = null;
   output = null;
   await window.refreshUsage();
-  assert.ok(card().children.some((n) => n.textContent === 'In — · Out —'));
+  assert.ok(card().children.some((n) => n.textContent === 'In — · Out — · Cache —'));
   assert.equal(toggle()['aria-expanded'], 'false');
   assert.equal(typeof nodes.activityCount.onclick, 'function');
   console.log('Panel recovery, refreshed input/output and unknown-value tests passed');

@@ -173,7 +173,8 @@ button:focus-visible {
   color: var(--muted);
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
   grid-row: 3;
 }
 

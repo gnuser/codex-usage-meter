@@ -2,9 +2,9 @@
 
 [English](README.md) | **简体中文**
 
-成片：[product-story.mp4](https://gnuser.github.io/codex-usage-meter/) · [英文字幕](../media/product-story.srt)
+成片：[product-story-cache.mp4](https://gnuser.github.io/codex-usage-meter/) · [英文字幕](../media/product-story-cache.srt)
 
-- 83 秒，1920×1080、24 fps，H.264 视频和 AAC 英文音轨。
+- 90 秒，1920×1080、24 fps，H.264 视频和 AAC 英文音轨。
 - 制作原因、会话与模型用量、小窗设计、额度与重置提醒，以及可选的 Tibo 更新。
 - 旁白经录音本人授权，使用 Qwen3-TTS 在本机克隆生成；是 AI 合成声音，不是新的真人录音。
 - 真实应用画面，经过取景与停顿剪辑。数字和日期为录制时状态，不代表当前账号信息。

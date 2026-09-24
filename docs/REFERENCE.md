@@ -14,16 +14,16 @@ The interface defaults to English. Conversation titles and messages retain their
 
 - [Installation guide](INSTALL.md): macOS, Windows, and optional integrations.
 - [Usage guide](USAGE.md): controls, numbers, and troubleshooting.
-- [83-second English overview](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](media/product-story.srt).
+- [90-second English overview](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](media/product-story-cache.srt).
 
-[![Watch the product overview](media/product-story.png)](https://gnuser.github.io/codex-usage-meter/)
+[![Watch the product overview](media/product-story-cache.png)](https://gnuser.github.io/codex-usage-meter/)
 
 The video explains why the plugin was built, conversation and model usage, its compact window, allowance and reset reminders, and optional Tibo updates. It combines an authorized English voice clone with actual app captures, edited framing, and pauses. The player offers an MP4 download; original recordings and voice models are excluded.
 
 ## Features
 
 - **Compact conversation list:** conversations with log updates in the last 30 minutes.
-- **Usage per turn:** current turn, conversation total, input/output tokens, and bars for the last ten turns. Compact K/M/B/T units with two decimal places.
+- **Usage per turn:** current turn, conversation total, input/output tokens, and bars for the last ten turns. Compact K/M/B/T units rounded to whole numbers.
 - **Model details:** expand a conversation to see cumulative input/output usage by recorded model.
 - **Conversation links:** click a title to open the corresponding Codex desktop conversation.
 - **Account allowance:** remaining allowance and reset times; menu bar or tray updates continue while hidden.

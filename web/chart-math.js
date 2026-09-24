@@ -17,8 +17,8 @@
   if(!valid(value))return '—';
   const units=['','K','M','B','T'];let index=0;
   while(value>=1000&&index<units.length-1){value/=1000;index++;}
-  if(Number(value.toFixed(2))>=1000&&index<units.length-1){value/=1000;index++;}
-  return value.toFixed(2)+units[index];
+  if(Number(value.toFixed(0))>=1000&&index<units.length-1){value/=1000;index++;}
+  return value.toFixed(0)+units[index];
  }
  const api={metric,segments,cacheRatio,compact};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.UsageCharts=api;

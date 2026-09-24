@@ -10,6 +10,12 @@ const node = (tag, text, cls) => {
   return el;
 };
 const fmt = UsageCharts.compact;
+function formatIO(usage) {
+  usage = usage ?? {};
+  const ratio = UsageCharts.cacheRatio(usage);
+  const cache = ratio === null ? '—' : (ratio * 100).toFixed(0) + '%';
+  return 'In ' + fmt(usage.input_tokens) + ' · Out ' + fmt(usage.output_tokens) + ' · Cache ' + cache;
+}
 let busy = false,
   timer,
   quotaBusy = false,
@@ -91,11 +97,8 @@ async function refresh(force = false) {
         summary.title = 'tokens · ' + (item?.warnings?.join('；') || 'Usage as recorded in local logs');
         card.append(summary);
         const current = turns.at(-1)?.usage || {};
-        const io = node(
-          'div',
-          'In ' + fmt(current.input_tokens) + ' · Out ' + fmt(current.output_tokens),
-          'session-io',
-        );
+        const io = node('div', formatIO(current), 'session-io');
+        io.title = 'Current turn · Cache = cached input tokens / input tokens';
         const details = node('div', null, 'model-details');
         details.setAttribute('aria-label', 'Model totals for this conversation');
         details.append(node('div', 'Model totals · tokens', 'model-heading'));
@@ -103,10 +106,7 @@ async function refresh(force = false) {
           const row = node('div', null, 'model-row');
           row.append(
             node('div', m.model, 'model-name'),
-            node(
-              'div',
-              'input ' + fmt(m.usage?.input_tokens) + ' · output ' + fmt(m.usage?.output_tokens),
-            ),
+            node('div', formatIO(m.usage)),
           );
           details.append(row);
         }

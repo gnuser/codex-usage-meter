@@ -13,11 +13,13 @@
   {
     "id": "usage",
     "title": "See usage by conversation.",
-    "detail": "Turn totals · Input / output · Model details",
-    "voice": "So I built this plugin to show usage for each conversation. Expand one to see input and output tokens by model, and understand where the usage is coming from.",
+    "detail": "Input / output · Cache share · Model details",
+    "voice": "So I built this plugin to show usage for each conversation. Input, output, and the input cache share are visible without expanding anything. Cache shows the percentage of input tokens read from cache. Expand the row for usage and cache share by model.",
     "captions": [
       "So I built this plugin to show usage for each conversation.",
-      "Expand one to see input and output tokens by model, and understand where the usage is coming from."
+      "Input, output, and the input cache share are visible without expanding anything.",
+      "Cache shows the percentage of input tokens read from cache.",
+      "Expand the row for usage and cache share by model."
     ]
   },
   {
