@@ -14,5 +14,5 @@ assert.deepEqual(segments({},'output_tokens'),[]);
 assert.equal(metric({total_tokens:0}),0);
 assert.equal(metric({total_tokens:NaN}),null);
 assert.deepEqual(segments(u,'reasoning_output_tokens'),[{kind:'reasoning_output_tokens',value:10}]);
-for(const [input,expected] of [[0,'0.00'],[null,'—'],[NaN,'—'],[-1,'—'],[999,'999.00'],[1000,'1.00K'],[1234567,'1.23M'],[1234567890,'1.23B'],[999999,'1.00M'],[1e12,'1.00T']]) assert.equal(compact(input),expected);
+for(const [input,expected] of [[0,'0'],[null,'—'],[NaN,'—'],[-1,'—'],[999,'999'],[1000,'1K'],[1234567,'1M'],[1234567890,'1B'],[999999,'1M'],[1e12,'1T']]) assert.equal(compact(input),expected);
 console.log('23 chart accounting and formatting assertions passed');

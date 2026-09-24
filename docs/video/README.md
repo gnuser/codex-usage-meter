@@ -2,9 +2,9 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-[Home](../../README.md) · [Watch the video](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](../media/product-story.srt)
+[Home](../../README.md) · [Watch the video](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](../media/product-story-cache.srt)
 
-- 83 seconds, 1920×1080 at 24 fps, H.264 video and AAC English audio.
+- 90 seconds, 1920×1080 at 24 fps, H.264 video and AAC English audio.
 - Why it was built, conversation/model usage, the compact window, allowance/reset reminders, and optional Tibo updates.
 - The recording owner authorized local Qwen3-TTS voice cloning. The narration is AI-generated, not a new human recording.
 - Actual app captures with edited framing and pauses. Recorded counts and dates are historical, not live account information.

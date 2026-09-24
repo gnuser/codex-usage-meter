@@ -4,7 +4,7 @@
 
 用一个小悬浮窗查看 Codex 最近活跃的会话、输入／输出 token 和剩余周额度。不用时收进 **macOS 菜单栏**或 **Windows 系统托盘**。
 
-[![观看 83 秒演示](docs/media/product-story.png)](https://gnuser.github.io/codex-usage-meter/)
+[![观看 90 秒演示](docs/media/product-story-cache.png)](https://gnuser.github.io/codex-usage-meter/)
 
 [观看演示](https://gnuser.github.io/codex-usage-meter/) · 英文克隆旁白，已获本人授权；真实应用画面。
 

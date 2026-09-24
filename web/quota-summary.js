@@ -41,7 +41,7 @@
       timestamp(w.resetsAt) && w.resetsAt * 1000 <= now
         ? 'Refresh needed'
         : percentage(w.remainingPercent)
-          ? w.remainingPercent.toFixed(2) + '%'
+          ? w.remainingPercent.toFixed(0) + '%'
           : '—';
     const label = (w) => {
       const m = w.windowDurationMins;

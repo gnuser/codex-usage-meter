@@ -12,6 +12,8 @@
 
 **Turn** is the current turn; **Total** is the conversation total. **In / Out** means input/output tokens. `K` = thousand, `M` = million, `B` = billion.
 
+**Cache** is cached input tokens divided by input tokens, shown for the current turn without expanding. Expand for each model’s cumulative share. Values are rounded to whole numbers; missing data is `—`. This is a token share, not a request hit rate.
+
 The title shows weekly allowance and its automatic reset countdown. The footer shows available manual resets and when the next reset credit expires. **Credit expiry does not restore allowance.**
 
 Only conversations updated in the last **30 minutes** appear. Usage refreshes about every **5 seconds**, allowance every **5 minutes**. A routing name such as `jev/auto` does not reveal the actual backend model.
