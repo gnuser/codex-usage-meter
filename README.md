@@ -4,9 +4,9 @@
 
 A small floating window for Codex usage. See recent conversations, input/output tokens, and remaining weekly allowance. Hide it in the **macOS menu bar** or **Windows system tray** when you need more space.
 
-[![Watch the 29-second demo](docs/media/getting-started.png)](https://gnuser.github.io/codex-usage-meter/)
+[![Watch the 83-second demo](docs/media/product-story.png)](https://gnuser.github.io/codex-usage-meter/)
 
-[Watch the demo](https://gnuser.github.io/codex-usage-meter/) · English AI-cloned narration, used with permission; sample data.
+[Watch the demo](https://gnuser.github.io/codex-usage-meter/) · English narration using an authorized voice clone; actual app captures.
 
 ## Install with one message
 
