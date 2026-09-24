@@ -1,11 +1,11 @@
 ---
 name: install-usage-meter
-description: Install or repair the Codex Usage Meter floating window on macOS or Windows, including desktop dependencies, the message hook, and first launch. Use when the user asks to install or set up Codex Usage Meter, not when they only want to query usage.
+description: Install or repair the Codex Usage Meter floating window on macOS or Windows, including desktop dependencies, Windows sign-in startup, the message hook, and first launch. Use when the user asks to install or set up Codex Usage Meter, not when they only want to query usage.
 ---
 
 # Install Codex Usage Meter
 
-Complete installation for the user's OS using the project's existing installers. Default to the floating window with a user-level message hook. The optional MCP plugin and Chrome/X integration are not required; install those only when requested. Respond in the user's language.
+Complete installation for the user's OS using the project's existing installers. Default to the floating window with Windows sign-in startup and a user-level message hook. The optional MCP plugin and Chrome/X integration are not required; install those only when requested. Respond in the user's language.
 
 This skill can be read directly from its public URL before the package is installed. Its repository is `https://github.com/gnuser/codex-usage-meter.git`.
 
@@ -19,7 +19,7 @@ This skill can be read directly from its public URL before the package is instal
 
 ## Install from the repository root
 
-Keep the checkout and Windows virtual environment in place: the window and hook use absolute paths into them. Inspect the existing `native/build.py` and `native/install_hook.py` before executing. Use their logic instead of hand-writing native registration or hook configuration.
+Keep the checkout and Windows virtual environment in place: the window, startup entry, and hook use absolute paths into them. Inspect the existing `native/build.py`, `native/install_autostart.py`, and `native/install_hook.py` before executing. Use their logic instead of hand-writing native registration or hook configuration.
 
 macOS:
 
@@ -34,18 +34,19 @@ Windows, in native PowerShell:
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r native/requirements-windows.txt
 .\.venv\Scripts\python.exe native/build.py
+.\.venv\Scripts\python.exe native/install_autostart.py
 .\.venv\Scripts\python.exe native/install_hook.py
 ```
 
-Reuse a working `.venv` rather than recreating it. The same interpreter must install dependencies, register the Windows window, and register its hook. On macOS, use the same resolved Python for building and the hook too.
+Reuse a working `.venv` rather than recreating it. The same interpreter must install dependencies, register the Windows window and sign-in startup, and register its hook. On macOS, use the same resolved Python for building and the hook too. Windows sign-in startup works for Codex desktop users without trusting the CLI hook; the hook is for prompt-driven opening from Codex CLI.
 
 Before registering a user-level hook, check whether this installation already uses an enabled plugin hook. Keep one working hook path; do not add another for the same installation. Re-running the hook installer with the same interpreter and path is safe: it preserves existing hooks, backs up changes, and avoids an exact duplicate. If paths changed, inspect and repair only this project's stale entry, preserving other hooks.
 
-Registering a hook does not trust it. Never edit trust state or claim it is automatically approved. Complete the other installation steps, then tell the user once to open Codex CLI's `/hooks`, review and trust the `floating.py hook` entry, and send a message in a new conversation.
+Registering a hook does not trust it. Never edit trust state or claim it is automatically approved. Complete the other installation steps, then tell CLI users once to open Codex CLI's `/hooks`, review and trust the `floating.py hook` entry, and send a message in a new conversation. Desktop-only users can use Windows sign-in startup without this step.
 
 ## Open and verify
 
-1. Verify the build output: the macOS app bundle or Windows `windows.json` interpreter registration reported by the installer.
+1. Verify the build output: the macOS app bundle or Windows `windows.json` interpreter registration, plus the Windows sign-in startup registration reported by the installer.
 2. If the actual Codex thread ID is available from task context, run `python3 floating.py show --thread ACTUAL_THREAD_ID` (Windows: `.\.venv\Scripts\python.exe` in place of `python3`). Replace the placeholder; do not invent an ID or substitute a ChatGPT conversation ID.
 3. If the thread ID is unavailable, read only recent catalog metadata:
 

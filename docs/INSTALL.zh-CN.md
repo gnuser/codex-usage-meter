@@ -40,14 +40,17 @@ python3 native/install_hook.py
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r native/requirements-windows.txt
 .\.venv\Scripts\python.exe native/build.py
+.\.venv\Scripts\python.exe native/install_autostart.py
 .\.venv\Scripts\python.exe native/install_hook.py
 ```
 
-请保留 `.venv`，小窗运行需要它。
+请保留 `.venv`，小窗运行需要它。自启步骤会为当前 Windows 用户注册登录后启动，无需管理员权限；只使用 Codex 桌面版时也不依赖 CLI hook。hook 仍可在发送 CLI 消息后打开小窗。
+
+以后如需关闭登录自启，运行 `.\.venv\Scripts\python.exe native/install_autostart.py --remove`。
 
 ## 3. 启动
 
-在 Codex CLI 中打开 **`/hooks`**，信任新增的 **`floating.py hook`** 条目。新建会话并发送一条消息，小窗就会出现。
+在 Windows 上，小窗会在下次登录时打开；要立即打开，可按[手动打开](REFERENCE.zh-CN.md#首次启动手动打开)操作。如果使用 Codex CLI，再进入 **`/hooks`** 信任 **`floating.py hook`** 条目，之后新建会话并发送消息也会打开小窗。
 
 完成。只用悬浮窗，无需再安装可选的 Codex 插件。
 
