@@ -1,0 +1,69 @@
+[
+  {
+    "id": "why",
+    "title": "Where did the allowance go?",
+    "detail": "Why I built Codex Usage Meter",
+    "voice": "Lately, our Codex allowance has been disappearing fast. On our two-hundred-dollar monthly subscription, we've sometimes used a week's allowance in a day. But the remaining percentage doesn't tell us which conversations used the most.",
+    "captions": [
+      "Lately, our Codex allowance has been disappearing fast.",
+      "On our two-hundred-dollar monthly subscription, we've sometimes used a week's allowance in a day.",
+      "But the remaining percentage doesn't tell us which conversations used the most."
+    ]
+  },
+  {
+    "id": "usage",
+    "title": "See usage by conversation.",
+    "detail": "Turn totals · Input / output · Model details",
+    "voice": "So I built this plugin to show usage for each conversation. Expand one to see input and output tokens by model, and understand where the usage is coming from.",
+    "captions": [
+      "So I built this plugin to show usage for each conversation.",
+      "Expand one to see input and output tokens by model, and understand where the usage is coming from."
+    ]
+  },
+  {
+    "id": "compact",
+    "title": "Small enough to stay out of the way.",
+    "detail": "A quick glance, without interrupting work",
+    "voice": "I wanted it easy to glance at without getting in the way. The window stays small, tucked into a corner. When you don't need it, hide it in the menu bar or system tray.",
+    "captions": [
+      "I wanted it easy to glance at without getting in the way.",
+      "The window stays small, tucked into a corner.",
+      "When you don't need it, hide it in the menu bar or system tray."
+    ]
+  },
+  {
+    "id": "allowance",
+    "title": "Know what is left—and when it resets.",
+    "detail": "Weekly allowance · Manual resets · Credit expiry",
+    "voice": "Weekly allowance, the next automatic reset, and available manual resets are all visible. You can also see when your next reset credit expires. That expiry is not an automatic refill. It helps you plan your usage at a glance.",
+    "captions": [
+      "Weekly allowance, the next automatic reset, and available manual resets are all visible.",
+      "You can also see when your next reset credit expires.",
+      "That expiry is not an automatic refill.",
+      "It helps you plan your usage at a glance."
+    ]
+  },
+  {
+    "id": "tibo",
+    "title": "Keep an eye on reset announcements.",
+    "detail": "Tibo’s latest three original posts · Optional Chrome extension",
+    "voice": "I also connected Tibo's X updates. A paired Chrome extension reads his latest three original posts and flags possible reset signals and any timing he mentions. It's a heads-up, not a guarantee. Your account's allowance is still the source of truth.",
+    "captions": [
+      "I also connected Tibo's X updates.",
+      "A paired Chrome extension reads his latest three original posts and flags possible reset signals and any timing he mentions.",
+      "It's a heads-up, not a guarantee.",
+      "Your account's allowance is still the source of truth."
+    ]
+  },
+  {
+    "id": "opensource",
+    "title": "Free. Open source. Built to be useful.",
+    "detail": "Try it, report an issue, or suggest an improvement.",
+    "voice": "The plugin is free and open source. Give it a try, and let me know what could be better. Feedback and suggestions are always welcome.",
+    "captions": [
+      "The plugin is free and open source.",
+      "Give it a try, and let me know what could be better.",
+      "Feedback and suggestions are always welcome."
+    ]
+  }
+]

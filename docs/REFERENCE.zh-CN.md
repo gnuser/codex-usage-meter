@@ -14,11 +14,11 @@
 
 - **第一次安装**：[分平台安装指南](INSTALL.zh-CN.md)
 - **已经装好**：[使用指南与快速排障](USAGE.zh-CN.md)
-- **视频讲解**：[约 30 秒英文讲解](https://gnuser.github.io/codex-usage-meter/) · [下载字幕](media/getting-started.srt)
+- **视频讲解**：[83 秒英文讲解](https://gnuser.github.io/codex-usage-meter/) · [下载字幕](media/product-story.srt)
 
-[![安装与使用讲解视频](media/getting-started.png)](https://gnuser.github.io/codex-usage-meter/)
+[![安装与使用讲解视频](media/product-story.png)](https://gnuser.github.io/codex-usage-meter/)
 
-视频只讲查看用量、展开模型和收起窗口；采用经录音本人授权的 AI 克隆英文旁白和简短英文字幕，使用示意界面和示例数据。播放页也提供 MP4 下载；完整可复制命令见安装指南。
+视频讲解制作原因、会话与模型用量、小窗设计、额度与重置提醒，以及可选的 Tibo 更新。使用本人授权的英文克隆旁白、英文字幕和真实应用画面，经过取景与停顿剪辑。播放页提供 MP4 下载；原始录音和声音模型不公开。
 
 ## 能做什么
 

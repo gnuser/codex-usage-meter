@@ -14,11 +14,11 @@ The interface defaults to English. Conversation titles and messages retain their
 
 - [Installation guide](INSTALL.md): macOS, Windows, and optional integrations.
 - [Usage guide](USAGE.md): controls, numbers, and troubleshooting.
-- [29-second English overview](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](media/getting-started.srt).
+- [83-second English overview](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](media/product-story.srt).
 
-[![Watch the product overview](media/getting-started.png)](https://gnuser.github.io/codex-usage-meter/)
+[![Watch the product overview](media/product-story.png)](https://gnuser.github.io/codex-usage-meter/)
 
-The video covers checking usage, expanding model details, and hiding the window. It uses an authorized AI voice clone, illustrative UI, and sample data. The player also offers an MP4 download. Original recordings and voice models are not included.
+The video explains why the plugin was built, conversation and model usage, its compact window, allowance and reset reminders, and optional Tibo updates. It combines an authorized English voice clone with actual app captures, edited framing, and pauses. The player offers an MP4 download; original recordings and voice models are excluded.
 
 ## Features
 

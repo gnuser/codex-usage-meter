@@ -1,0 +1,58 @@
+WEBVTT
+
+00:00:00.120 --> 00:00:03.452
+Lately, our Codex allowance has been disappearing fast.
+
+00:00:03.452 --> 00:00:09.282
+On our two-hundred-dollar monthly subscription, we've sometimes used a week's allowance in a day.
+
+00:00:09.282 --> 00:00:14.280
+But the remaining percentage doesn't tell us which conversations used the most.
+
+00:00:14.703 --> 00:00:19.103
+So I built this plugin to show usage for each conversation.
+
+00:00:19.103 --> 00:00:26.303
+Expand one to see input and output tokens by model, and understand where the usage is coming from.
+
+00:00:26.745 --> 00:00:30.529
+I wanted it easy to glance at without getting in the way.
+
+00:00:30.529 --> 00:00:33.051
+The window stays small, tucked into a corner.
+
+00:00:33.051 --> 00:00:37.465
+When you don't need it, hide it in the menu bar or system tray.
+
+00:00:37.912 --> 00:00:43.458
+Weekly allowance, the next automatic reset, and available manual resets are all visible.
+
+00:00:43.458 --> 00:00:47.725
+You can also see when your next reset credit expires.
+
+00:00:47.725 --> 00:00:50.712
+That expiry is not an automatic refill.
+
+00:00:50.712 --> 00:00:54.552
+It helps you plan your usage at a glance.
+
+00:00:54.995 --> 00:00:57.489
+I also connected Tibo's X updates.
+
+00:00:57.489 --> 00:01:05.801
+A paired Chrome extension reads his latest three original posts and flags possible reset signals and any timing he mentions.
+
+00:01:05.801 --> 00:01:08.295
+It's a heads-up, not a guarantee.
+
+00:01:08.295 --> 00:01:12.035
+Your account's allowance is still the source of truth.
+
+00:01:12.495 --> 00:01:15.452
+The plugin is free and open source.
+
+00:01:15.452 --> 00:01:20.521
+Give it a try, and let me know what could be better.
+
+00:01:20.521 --> 00:01:23.055
+Feedback and suggestions are always welcome.
