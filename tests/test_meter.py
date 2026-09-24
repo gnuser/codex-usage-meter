@@ -1,6 +1,7 @@
 import io
 from contextlib import closing
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -13,7 +14,7 @@ from urllib.request import Request, urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from usage_meter.ledger import FIELDS, Ledger, add, normalize_limits, parse, usage
-from usage_meter.account import AppServer, account_snapshot
+from usage_meter.account import AppServer, account_snapshot, codex_executable
 from meter import Service, dispatch
 
 
@@ -268,6 +269,21 @@ class LedgerTests(unittest.TestCase):
 
 
 class LimitsTests(unittest.TestCase):
+    def test_windows_desktop_codex_discovery_without_path_alias(self):
+        with tempfile.TemporaryDirectory() as folder:
+            bin_dir = Path(folder) / 'OpenAI/Codex/bin'
+            older, newer = bin_dir/'old/codex.exe', bin_dir/'new/codex.exe'
+            for candidate, modified in ((older, 100), (newer, 200)):
+                candidate.parent.mkdir(parents=True)
+                candidate.touch()
+                os.utime(candidate, (modified, modified))
+            with patch.dict(os.environ, {'LOCALAPPDATA': folder}, clear=True), \
+                 patch('usage_meter.account.shutil.which', return_value=None), \
+                 patch('usage_meter.account.is_windows', return_value=True):
+                self.assertEqual(codex_executable(), newer)
+                os.environ['CODEX_USAGE_CODEX'] = 'custom-codex.exe'
+                self.assertEqual(codex_executable(), 'custom-codex.exe')
+
     def test_multiple_buckets_and_nulls(self):
         r=normalize_limits({'rateLimits':{'primary':{'usedPercent':99}},'rateLimitsByLimitId':{
           'a':{'primary':{'usedPercent':25,'resetsAt':100},'secondary':None},

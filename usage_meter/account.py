@@ -1,6 +1,7 @@
 """Read-only official app-server JSON-RPC adapter (no private HTTP APIs)."""
 import json
 import os
+from pathlib import Path
 import queue
 import shutil
 import subprocess
@@ -9,9 +10,24 @@ import time
 from .desktop import is_windows
 
 
+def codex_executable():
+    configured = os.environ.get('CODEX_USAGE_CODEX')
+    if configured:
+        return configured
+    on_path = shutil.which('codex')
+    if on_path or not is_windows():
+        return on_path
+    local = os.environ.get('LOCALAPPDATA')
+    if not local:
+        return None
+    candidates = (Path(local) / 'OpenAI' / 'Codex' / 'bin').glob('*/codex.exe')
+    return max((path for path in candidates if path.is_file()),
+               key=lambda path: path.stat().st_mtime, default=None)
+
+
 class AppServer:
     def __init__(self, command=None, home=None, timeout=20):
-        executable = os.environ.get('CODEX_USAGE_CODEX') or shutil.which('codex')
+        executable = codex_executable() if command is None else None
         if command is None:
             if not executable:
                 raise RuntimeError('Codex not found; set CODEX_USAGE_CODEX to its executable path')
