@@ -23,6 +23,6 @@ Only conversations updated in the last **30 minutes** appear. Usage refreshes ab
 - **Missing window:** check the menu bar or hidden tray icons, then [open manually](REFERENCE.md#open-manually).
 - **Empty list:** send a message in Codex and wait for the log update.
 - **Allowance shows `—`:** check Codex CLI sign-in. Token statistics work independently.
-- **No automatic opening:** trust the hook in `/hooks`, then start a new conversation.
+- **No automatic opening:** on Windows, rerun `native/install_autostart.py` with the installed virtual environment and check the current user's sign-in startup entry. For CLI prompt-driven opening, trust the hook in `/hooks`, then start a new conversation.
 
 [Install](INSTALL.md) · [History, Tibo, updates & reference](REFERENCE.md)

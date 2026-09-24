@@ -23,6 +23,6 @@
 - **找不到小窗：**检查菜单栏或隐藏的托盘图标，再尝试[手动打开](REFERENCE.zh-CN.md#首次启动手动打开)。
 - **列表为空：**在 Codex 发一条消息，等待日志更新。
 - **额度显示 `—`：**检查 Codex CLI 是否登录，token 统计不受影响。
-- **没有自动打开：**在 `/hooks` 信任新增 hook，再新建会话。
+- **没有自动打开：**Windows 用户可用已安装的虚拟环境重新运行 `native/install_autostart.py`，检查当前用户的登录启动项。如需 CLI 发消息时打开，还要在 `/hooks` 信任 hook，再新建会话。
 
 [安装](INSTALL.zh-CN.md) · [历史记录、Tibo、更新与详细参考](REFERENCE.zh-CN.md)

@@ -14,7 +14,7 @@ Paste this into Codex:
 
 > Install Codex Usage Meter by following this skill: https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
 
-Codex handles setup for your OS. For automatic opening, review and trust the hook once in `/hooks`.
+Codex handles setup for your OS. On Windows, the window starts when you sign in; CLI users can also review and trust the hook once in `/hooks` for prompt-driven opening.
 
 [Manual installation](docs/INSTALL.md)
 

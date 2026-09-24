@@ -14,7 +14,7 @@
 
 > 请按照这个 skill 帮我安装 Codex Usage Meter：https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
 
-Codex 会按系统完成配置。首次自动启动还需在 `/hooks` 中确认信任一次。
+Codex 会按系统完成配置。Windows 登录后会自动启动小窗；使用 CLI 时，还可在 `/hooks` 中信任钩子，让发消息时也能打开小窗。
 
 [手动安装](docs/INSTALL.zh-CN.md)
 
