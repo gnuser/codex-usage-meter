@@ -227,6 +227,9 @@ The compact list does not return message bodies. The full dashboard and JSON exp
 
 ## Optional Tibo reset monitor
 
+Tibo is excluded from the standard installation and disabled by default. Install with `--with-tibo`, or set `CODEX_USAGE_TIBO=1` before starting the source service.
+
+
 
 1. Sign into X in Chrome and confirm [Tibo's profile](https://x.com/thsottiaux) opens.
 2. Open `chrome://extensions` and enable **Developer mode**.
