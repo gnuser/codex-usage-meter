@@ -1,6 +1,7 @@
 /* Optional public-post view. All remote data is treated as plain text. */
 (() => {
   'use strict';
+  document.getElementById('tibo').hidden = false;
   const key = new URLSearchParams(location.hash.slice(1)).get('key');
   const button = document.getElementById('tiboToggle');
   const details = document.getElementById('tiboDetails');
