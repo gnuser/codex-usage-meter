@@ -50,8 +50,13 @@ py -3 -m venv .venv
 
 ## 3. 启动
 
-在 Windows 上，小窗会在下次登录时打开；要立即打开，可按[手动打开](REFERENCE.zh-CN.md#首次启动手动打开)操作。如果使用 Codex CLI，再进入 **`/hooks`** 信任 **`floating.py hook`** 条目，之后新建会话并发送消息也会打开小窗。
+Windows 小窗会在下次登录时打开；要立即打开，可按[手动打开](REFERENCE.zh-CN.md#首次启动手动打开)操作。
+
+在 Codex CLI 中打开 **`/hooks`**，信任指向 **`floating.py hook`** 的 **SessionStart** 和 **UserPromptSubmit** 条目。启动或恢复会话时会启动小窗，发送消息也可触发。仅打开 Codex、尚未启动或恢复会话时，不保证触发。已安装用户重新运行上面的 hook 安装命令即可补上启动入口。
+
 
 完成。只用悬浮窗，无需再安装可选的 Codex 插件。
 
 [怎么使用](USAGE.zh-CN.md) · [手动打开](REFERENCE.zh-CN.md#首次启动手动打开) · [可选插件与 Tibo 设置](REFERENCE.zh-CN.md#5-可选安装为-codex-插件)
+
+标准安装不包含 Tibo 和 Chrome 扩展。实验性可选版使用 `python3 install.py --with-tibo`（需要时加 `--enable`）。源码运行时，在启动服务前设置 `CODEX_USAGE_TIBO=1` 才会启用。

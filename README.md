@@ -4,9 +4,9 @@
 
 A small floating window for Codex usage. See recent conversations, input/output tokens, and remaining weekly allowance. Hide it in the **macOS menu bar** or **Windows system tray** when you need more space.
 
-[![Watch the 90-second demo](docs/media/product-story-cache.png)](https://gnuser.github.io/codex-usage-meter/)
+[![Watch the 108-second demo](docs/media/product-story-sidebar.png)](https://gnuser.github.io/codex-usage-meter/)
 
-[Watch the demo](https://gnuser.github.io/codex-usage-meter/) · English narration using an authorized voice clone; actual app captures.
+[Watch the demo](https://gnuser.github.io/codex-usage-meter/) · English narration using an authorized voice clone; app captures plus a labeled sidebar demonstration.
 
 ## Install with one message
 
@@ -23,8 +23,10 @@ Codex handles setup for your OS. On Windows, the window starts when you sign in;
 - Send a message in Codex: recently active conversations appear.
 - Click a title to open that conversation.
 - Click **▸** for usage by model.
-- Click the allowance percentage for reset details.
+- Click the allowance percentage for reset details, including public reset announcements from [Codex Resets](https://codex-resets.com).
 - Close the window to hide it; restore it from the menu bar or tray.
+
+[Experimental sidebar rings and conversation badges](integrations/sidebar/README.md) · Optional, requires a local debugging endpoint.
 
 [Usage & quick fixes](docs/USAGE.md) · [Optional integrations & reference](docs/REFERENCE.md)
 

@@ -46,6 +46,18 @@
     ]
   },
   {
+    "id": "sidebar",
+    "title": "Usage, right in the sidebar.",
+    "detail": "Optional sidebar · Narrow rings · Hover details",
+    "voice": "There's also an optional sidebar mode. Compact rings show your remaining allowance and days until reset, without widening the sidebar. Hover for input, output, cache usage, and reset credit expiry. It needs local debugging enabled, so the floating window remains the default.",
+    "captions": [
+      "There's also an optional sidebar mode.",
+      "Compact rings show your remaining allowance and days until reset, without widening the sidebar.",
+      "Hover for input, output, cache usage, and reset credit expiry.",
+      "It needs local debugging enabled, so the floating window remains the default."
+    ]
+  },
+  {
     "id": "tibo",
     "title": "Keep an eye on reset announcements.",
     "detail": "Tibo’s latest three original posts · Optional Chrome extension",

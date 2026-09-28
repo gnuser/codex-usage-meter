@@ -140,8 +140,10 @@ class WindowsTests(unittest.TestCase):
             config = json.loads((target/'.mcp.json').read_text(encoding='utf-8'))['mcpServers']['usage-meter']
             self.assertEqual(config['command'], sys.executable)
             self.assertEqual(config['args'], [str(target/'meter.py'), 'mcp'])
-            hook = json.loads((target/'hooks/hooks.json').read_text(encoding='utf-8'))['hooks']['UserPromptSubmit'][0]['hooks'][0]['command']
-            self.assertEqual(hook, subprocess.list2cmdline([sys.executable, str(target/'floating.py'), 'hook']))
+            hooks = json.loads((target/'hooks/hooks.json').read_text(encoding='utf-8'))['hooks']
+            for event in ('UserPromptSubmit', 'SessionStart'):
+                hook = hooks[event][0]['hooks'][0]['command']
+                self.assertEqual(hook, subprocess.list2cmdline([sys.executable, str(target/'floating.py'), 'hook']))
             self.assertFalse((target/'.git').exists())
 
 if __name__ == '__main__': unittest.main()

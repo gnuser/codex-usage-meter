@@ -50,8 +50,13 @@ To disable sign-in startup later, run `.\.venv\Scripts\python.exe native/install
 
 ## 3. Start
 
-On Windows, the window opens at the next sign-in. For immediate opening, use [Open manually](REFERENCE.md#open-manually). If you use Codex CLI, open **`/hooks`** and trust the new entry pointing to **`floating.py hook`**; a message in a new conversation will then open the window.
+On Windows, the window opens at the next sign-in. For immediate opening, use [Open manually](REFERENCE.md#open-manually).
+
+In Codex CLI, open **`/hooks`** and trust the **SessionStart** and **UserPromptSubmit** entries pointing to **`floating.py hook`**. Starting or resuming a conversation launches the window; sending a message is also a fallback. Opening Codex without starting/resuming a conversation is not a session event. For an existing installation, rerun the hook installer above to add the startup hook.
+
 
 That's it. You do not need the optional Codex plugin for the floating window.
 
 [How to use it](USAGE.md) · [Open manually](REFERENCE.md#open-manually) · [Optional plugin / Tibo setup](REFERENCE.md#optional-codex-plugin)
+
+The standard installation excludes Tibo and the Chrome extension. For the experimental optional package, use `python3 install.py --with-tibo` (add `--enable` if needed). When running from source, set `CODEX_USAGE_TIBO=1` before starting the service to opt in.

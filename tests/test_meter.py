@@ -394,7 +394,9 @@ class IntegrationTests(unittest.TestCase):
                 self.assertNotIn('events', data['selected'])
                 self.assertIsInstance(data['selected']['models'], list)
                 self.assertTrue(urlopen(base+'/quota-summary.js').read())
-                self.assertTrue(urlopen(base+'/tibo.js').read())
+                with self.assertRaises(HTTPError) as missing:
+                    urlopen(base+'/tibo.js')
+                self.assertEqual(missing.exception.code, 404)
                 self.assertTrue(urlopen(base+'/panel-size.js').read())
                 with self.assertRaises(HTTPError): urlopen(base+'/api/tibo')
                 self.assertNotIn('messages', json.dumps(data))

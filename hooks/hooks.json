@@ -1,11 +1,27 @@
 {
   "hooks": {
-    "UserPromptSubmit": [{
-      "hooks": [{
-        "type": "command",
-        "command": "python3 \"${PLUGIN_ROOT}/floating.py\" hook",
-        "timeout": 3
-      }]
-    }]
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${PLUGIN_ROOT}/floating.py\" hook",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${PLUGIN_ROOT}/floating.py\" hook",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
   }
 }

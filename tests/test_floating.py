@@ -11,16 +11,18 @@ from native.install_hook import install
 
 
 class FloatingTests(unittest.TestCase):
-    def test_only_prompt_submission_switches_and_never_saves_prompt(self):
+    def test_session_start_and_prompt_select_without_saving_prompt(self):
         with tempfile.TemporaryDirectory() as name:
             folder = Path(name)
             self.assertTrue(select_session({'hook_event_name':'UserPromptSubmit','session_id':'first','prompt':'PRIVATE'},folder,10))
-            for kind in ('Stop','SessionStart','SubagentStop'):
+            for kind in ('Stop','SubagentStop'):
                 self.assertFalse(select_session({'hook_event_name':kind,'session_id':'other'},folder,20))
             self.assertFalse(select_session({'hook_event_name':'UserPromptSubmit','session_id':'old'},folder,9))
             self.assertEqual(json.loads((folder/'selection.json').read_text()),{'thread':'first','submittedAt':10})
             self.assertTrue(select_session({'hook_event_name':'UserPromptSubmit','session_id':'second'},folder,21))
             self.assertEqual(json.loads((folder/'selection.json').read_text())['thread'],'second')
+            self.assertTrue(select_session({'hook_event_name':'SessionStart','session_id':'resumed'},folder,22))
+            self.assertEqual(json.loads((folder/'selection.json').read_text())['thread'],'resumed')
             if not is_windows():
                 self.assertEqual((folder/'selection.json').stat().st_mode & 0o777,0o600)
             self.assertNotIn('PRIVATE',(folder/'selection.json').read_text())
@@ -59,6 +61,7 @@ class FloatingTests(unittest.TestCase):
             self.assertEqual(result['hooks']['Stop'],existing['hooks']['Stop'])
             self.assertEqual(result['hooks']['UserPromptSubmit'][0],existing['hooks']['UserPromptSubmit'][0])
             self.assertEqual(len(result['hooks']['UserPromptSubmit']),2)
+            self.assertEqual(result['hooks']['SessionStart'][0]['matcher'], 'startup|resume')
             install(path)
             self.assertEqual(json.loads(path.read_text()),result)
             backups=list(path.parent.glob('hooks.json.usage-meter-backup-*'))

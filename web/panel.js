@@ -20,7 +20,9 @@ let busy = false,
   timer,
   quotaBusy = false,
   lastQuotaAttempt = 0,
-  quotaData = null;
+  quotaData = null,
+  publicResets = null,
+  resetsBusy = false;
 function status(text) {
   $('status').textContent = text;
   $('status').hidden = !text;
@@ -48,6 +50,7 @@ async function refresh(force = false) {
   if (busy || !key || (!force && document.hidden)) return;
   renderResetSummary();
   if (Date.now() - lastQuotaAttempt >= 300000) refreshQuota();
+  void refreshPublicResets();
   busy = true;
   clearTimeout(timer);
   const controller = new AbortController(),
@@ -184,8 +187,18 @@ async function refresh(force = false) {
     if (!document.hidden) timer = setTimeout(() => refresh(), 5000);
   }
 }
+async function refreshPublicResets() {
+  if (resetsBusy || !key) return;
+  resetsBusy = true;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+  try { publicResets = await request('/api/public-resets', controller.signal); }
+  catch { publicResets = { status: 'unavailable' }; }
+  finally { clearTimeout(timeout); resetsBusy = false; }
+  renderResetSummary();
+}
 function renderResetSummary() {
-  const view = QuotaSummary.summarize(quotaData);
+  const view = QuotaSummary.summarize({ ...quotaData, publicResets: publicResets ?? quotaData?.publicResets });
   $('resetSummary').textContent = view.details;
   $('resetStatus').textContent = view.status;
   $('quotaSummary').textContent = view.summary;

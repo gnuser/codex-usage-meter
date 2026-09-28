@@ -5,6 +5,7 @@ from pathlib import Path
 import queue
 import shutil
 import subprocess
+import sys
 import threading
 import time
 from .desktop import is_windows
@@ -15,8 +16,18 @@ def codex_executable():
     if configured:
         return configured
     on_path = shutil.which('codex')
-    if on_path or not is_windows():
+    if on_path:
         return on_path
+    if not is_windows() and sys.platform == 'darwin':
+        for folder in (Path('/Applications'), Path.home() / 'Applications'):
+            for app in ('ChatGPT.app', 'Codex.app'):
+                resources = folder / app / 'Contents/Resources'
+                for relative in ('codex-cli/CodexCLI.app/Contents/MacOS/codex', 'codex'):
+                    candidate = resources / relative
+                    if candidate.is_file() and os.access(candidate, os.X_OK):
+                        return str(candidate)
+    if not is_windows():
+        return None
     local = os.environ.get('LOCALAPPDATA')
     if not local:
         return None

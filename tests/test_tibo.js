@@ -16,7 +16,7 @@ class Element {
     this[key] = value;
   }
 }
-const nodes = { tiboToggle: new Element(), tiboDetails: new Element() };
+const nodes = { tibo: new Element(), tiboToggle: new Element(), tiboDetails: new Element() };
 const messages = [];
 const window = {
   webkit: { messageHandlers: { usageControl: { postMessage: (value) => messages.push(value) } } },

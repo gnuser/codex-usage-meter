@@ -43,3 +43,14 @@ assert.ok(!view.status.includes('expires in'));
 assert.ok(summarize(make(1, []), now).status.includes('expiry unknown'));
 assert.ok(summarize({ windows: [{ remainingPercent: -2 }] }, now).summary.endsWith('—'));
 console.log('Quota summary: credits, deadlines, stale windows and unknown values passed');
+
+// Public forecasts never replace account-specific reset/expiry information.
+const publicData = { publicResets: {status: 'ok', latestAt: now / 1000 - 3600,
+  scheduled: true, watchUntil: now / 1000 + 3600, forecast: 'around an event'} };
+const publicView = summarize(publicData, now);
+assert.match(publicView.details, /Forecast \(unconfirmed\)/);
+assert.match(publicView.details, /awaiting execution confirmation/);
+assert.equal(publicView.title, summarize({}, now).title);
+assert.equal(publicView.status, summarize({}, now).status);
+assert.doesNotMatch(summarize(publicData, now + 3600001).details, /Forecast/);
+assert.match(summarize({publicResets: {status: 'unavailable'}}, now).details, /unavailable/);

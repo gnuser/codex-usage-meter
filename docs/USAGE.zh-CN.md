@@ -26,3 +26,7 @@
 - **没有自动打开：**Windows 用户可用已安装的虚拟环境重新运行 `native/install_autostart.py`，检查当前用户的登录启动项。如需 CLI 发消息时打开，还要在 `/hooks` 信任 hook，再新建会话。
 
 [安装](INSTALL.zh-CN.md) · [历史记录、Tibo、更新与详细参考](REFERENCE.zh-CN.md)
+
+### 公开重置公告
+
+重置详情和可选侧栏的悬停提示，通过免费的 Codex Resets MCP（`https://codex-resets.com/mcp`）每 5 分钟后台读取公告，无需 Chrome 登录或 API key。仅发送公开状态查询，不上传会话或账户数据。这是社区数据源，预测会标注为未确认；你的周重置时间和重置券到期时间仍以账户数据为准。过期预测自动隐藏，连接失败显示不可用，不影响本地用量展示。

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One shared local window, selected only by UserPromptSubmit hooks."""
+"""One shared local window, started by session and prompt hooks."""
 import argparse
 import json
 import os
@@ -43,7 +43,7 @@ def atomic_json(path, value):
 def select_session(payload, folder, stamp=None):
     # Store no prompt text, transcript path or model context.
     identifier = payload.get('session_id')
-    if payload.get('hook_event_name') != 'UserPromptSubmit' or not isinstance(identifier, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', identifier):
+    if payload.get('hook_event_name') not in ('UserPromptSubmit', 'SessionStart') or not isinstance(identifier, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', identifier):
         return False
     stamp = time.time_ns() if stamp is None else stamp
     folder.mkdir(parents=True, exist_ok=True, mode=0o700)

@@ -42,7 +42,7 @@ class BrowserPostsTests(unittest.TestCase):
 
     def test_scoped_key_rotation_and_http_authentication(self):
         with tempfile.TemporaryDirectory() as home:
-            service = Service(home)
+            service = Service(home, enable_tibo=True)
             base = service.dashboard().split('#')[0].rstrip('/')
             def post(path, key, data):
                 return json.load(urlopen(Request(base+path, data=json.dumps(data).encode(),

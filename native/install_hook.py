@@ -23,14 +23,21 @@ def install(path):
         raise ValueError('Unexpected hooks config shape; no changes made')
     args = [sys.executable, str(ROOT / 'floating.py'), 'hook']
     command = subprocess.list2cmdline(args) if is_windows() else shlex.join(args)
-    groups = config.setdefault('hooks', {}).setdefault('UserPromptSubmit', [])
-    if not isinstance(groups, list):
-        raise ValueError('Unexpected UserPromptSubmit shape; no changes made')
-    for group in groups:
-        if any(h.get('command') == command for h in group.get('hooks', [])):
-            print('Hook already registered')
-            return
-    groups.append({'hooks': [{'type': 'command', 'command': command, 'timeout': 3}]})
+    changed = False
+    for event in ('UserPromptSubmit', 'SessionStart'):
+        groups = config.setdefault('hooks', {}).setdefault(event, [])
+        if not isinstance(groups, list):
+            raise ValueError(f'Unexpected {event} shape; no changes made')
+        if any(h.get('command') == command for group in groups for h in group.get('hooks', [])):
+            continue
+        group = {'hooks': [{'type': 'command', 'command': command, 'timeout': 3}]}
+        if event == 'SessionStart':
+            group['matcher'] = 'startup|resume'
+        groups.append(group)
+        changed = True
+    if not changed:
+        print('Hooks already registered')
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
     if exists:
         backup = path.with_name(path.name + '.usage-meter-backup-' + str(time.time_ns()))
@@ -40,7 +47,7 @@ def install(path):
         print('Backup:', backup)
     atomic_json(path, config)
     print('Registered:', path)
-    print('Review and trust the new UserPromptSubmit hook in Codex /hooks before it can run.')
+    print('Review and trust the UserPromptSubmit and SessionStart hooks in Codex /hooks before it can run.')
 
 
 if __name__ == '__main__':
