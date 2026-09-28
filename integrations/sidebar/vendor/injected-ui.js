@@ -1,5 +1,5 @@
-function installUsageBadge() {
-  const VERSION = 'usage-meter-46-8';
+function installUsageBadge(createPopover) {
+  const VERSION = 'usage-meter-47-3';
   const KEY = '__codexUsageBadge';
   if (window[KEY]?.version === VERSION) {
     window[KEY].place();
@@ -12,7 +12,8 @@ function installUsageBadge() {
   badge.setAttribute('role', 'meter');
   badge.setAttribute('aria-valuemin', '0');
   badge.setAttribute('aria-valuemax', '100');
-  badge.setAttribute('aria-describedby', 'codex-usage-tooltip');
+  badge.setAttribute('aria-controls', 'codex-usage-tooltip');
+  badge.setAttribute('aria-haspopup', 'dialog');
   function meterMarkup(suffix = '') {
     return `<svg class="usage-ring" viewBox="0 0 36 36" aria-hidden="true">
     <defs><linearGradient id="codex-usage-ring-gradient${suffix}" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -156,10 +157,21 @@ function installUsageBadge() {
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
   };
+  let pinned = false;
+  const popover = createPopover(tooltip, () => { pinned = false; popover.setPinned(false); badge.focus(); hideTooltip(); }, togglePinned);
+  function togglePinned() {
+    pinned = !pinned; popover.setPinned(pinned);
+    if (pinned) showTooltip(); else hideTooltip();
+  }
+  function scheduleHide() {
+    clearTimeout(hoverTimer);
+    if (!pinned) hoverTimer = setTimeout(hideTooltip, 250);
+  }
   function hideTooltip() {
     clearTimeout(hoverTimer);
     hoverTimer = null;
     tooltip.hidden = true;
+    badge.setAttribute('aria-expanded', 'false');
   }
   function positionTooltip() {
     const r = badge.getBoundingClientRect();
@@ -170,6 +182,7 @@ function installUsageBadge() {
     clearTimeout(hoverTimer);
     if (!visible(badge) || document.hidden || disposed) return;
     tooltip.hidden = false;
+    badge.setAttribute('aria-expanded', 'true');
     positionTooltip();
   }
   function scheduleTooltip() {
@@ -204,28 +217,6 @@ function installUsageBadge() {
       for (const attr of ['role', 'aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-valuetext']) element.removeAttribute(attr);
     }
   }
-  let tooltipSignature = '';
-  function renderTooltip() {
-    const rows = !value.stale && Array.isArray(value.tooltipRows) ? value.tooltipRows : null;
-    const signature = JSON.stringify(rows || value.title);
-    if (signature === tooltipSignature) return;
-    tooltipSignature = signature;
-    tooltip.replaceChildren();
-    if (!rows) { tooltip.textContent = value.title; return; }
-    for (const row of rows) {
-      const line = document.createElement('div');
-      line.className = 'tip-row' + (row.group ? ' tip-group' : '') + (row.footer ? ' tip-footer' : '');
-      line.dataset.tone = row.tone;
-      for (const [kind, text] of [['label', row.label], ['value', row.value], ['note', row.note]]) {
-        if (text == null) continue;
-        const part = document.createElement('span');
-        part.className = 'tip-' + kind;
-        part.textContent = text;
-        line.appendChild(part);
-      }
-      tooltip.appendChild(line);
-    }
-  }
   function render() {
     const dual = value.mode === 'dual' && value.rings?.length === 2;
     const percent = Number.isFinite(value.percent) ? Math.max(0, Math.min(100, Math.round(value.percent))) : null;
@@ -246,7 +237,7 @@ function installUsageBadge() {
       if (percent === null) badge.removeAttribute('aria-valuenow');
       else badge.setAttribute('aria-valuenow', String(percent));
     }
-    renderTooltip();
+    popover.update(value);
   }
   function place() {
     if (disposed || !document.body) return;
@@ -278,13 +269,24 @@ function installUsageBadge() {
     if (records.some(r => !badge.contains(r.target) && !tooltip.contains(r.target) && r.target !== style)) schedulePlacement();
   });
   const resizeObserver = new ResizeObserver(schedulePlacement);
+  resizeObserver.observe(tooltip);
   observer.observe(document.documentElement, { childList: true, subtree: true });
   badge.addEventListener('mouseenter', scheduleTooltip);
-  badge.addEventListener('mouseleave', hideTooltip);
+  badge.addEventListener('mouseleave', scheduleHide);
+  badge.addEventListener('click', togglePinned);
+  tooltip.addEventListener('mouseenter', () => clearTimeout(hoverTimer));
+  tooltip.addEventListener('mouseleave', scheduleHide);
+  tooltip.addEventListener('focusin', () => clearTimeout(hoverTimer));
   badge.addEventListener('focus', showTooltip);
-  badge.addEventListener('blur', hideTooltip);
-  const onKeyDown = e => { if (e.key === 'Escape') hideTooltip(); };
-  badge.addEventListener('keydown', onKeyDown);
+  badge.addEventListener('blur', e => { if (!tooltip.contains(e.relatedTarget)) scheduleHide(); });
+  tooltip.addEventListener('focusout', e => { if (!tooltip.contains(e.relatedTarget) && e.relatedTarget !== badge) scheduleHide(); });
+  const onKeyDown = e => {
+    if (e.key === 'Escape' && !tooltip.hidden) { pinned = false; popover.setPinned(false); hideTooltip(); }
+    if (e.target === badge && ['Enter', ' '].includes(e.key)) { e.preventDefault(); togglePinned(); }
+  };
+  const onOutside = e => { if (!badge.contains(e.target) && !tooltip.contains(e.target)) { pinned = false; popover.setPinned(false); hideTooltip(); } };
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('pointerdown', onOutside);
   window.addEventListener('resize', schedulePlacement);
   document.addEventListener('visibilitychange', hideTooltip);
   window[KEY] = {
@@ -304,6 +306,8 @@ function installUsageBadge() {
       clearTimeout(placementTimer);
       clearInterval(freshnessTimer);
       hideTooltip();
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onOutside);
       window.removeEventListener('resize', schedulePlacement);
       document.removeEventListener('visibilitychange', hideTooltip);
       badge.remove(); tooltip.remove(); style.remove();

@@ -1,62 +1,27 @@
 # Install
 
-**English** | [简体中文](INSTALL.zh-CN.md) · [Home](../README.md)
+**English** | [简体中文](INSTALL.zh-CN.md)
 
-You need **Python 3.10+**, Git, and Codex. Sign into Codex CLI to see account allowance.
+The default is now a compact sidebar panel. No floating window, hook trust, native build, or open terminal is needed.
 
-## Let Codex install it
+1. Install **Python 3.10+** and **Node.js 24+** if missing. macOS can reuse the Codex bundled Node runtime when present.
+2. Extract `CodexUsageMeter.zip`, then double-click **Install.command** (Mac) or **Install.cmd** (Windows).
+3. Quit Codex, the old floating window, and any old sidebar terminal normally. Open **Codex Usage Meter** from `~/Applications` (Mac) or your Desktop (Windows).
 
-Send this message to Codex:
+The installer copies the files into your user application-data directory. You can discard the extracted ZIP afterward; keep Python and Node installed. Updating: repeat the same steps with a new package. Existing session logs are untouched.
 
-> Install Codex Usage Meter by following this skill: https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
+This is a source installation package, not a standalone signed/notarized binary. Download protection may require approving the installer in macOS Privacy & Security. The launcher enables a **local-only debugging endpoint** and never force-quits Codex. Do not expose or forward that endpoint. Open Codex using the new launcher for sidebar mode; quitting and opening the ordinary Codex icon disables debugging. Client updates may break this experimental integration.
 
-It handles the platform setup and first launch. Approve the message hook once in `/hooks` for automatic opening. The manual steps below are an alternative.
+If Codex cannot be found, set `CODEX_METER_APP` to its `.app` or executable path. Windows Store installations may need an accessible executable specified explicitly. Failures show an error message/file; diagnostic logs are `sidebar.log` in the `CodexUsageMeter` application-data directory.
 
-## 1. Download
+## From source / one-message installation
 
-```sh
-git clone https://github.com/gnuser/codex-usage-meter.git
-cd codex-usage-meter
-```
-
-Run the following commands here. Keep this directory after installation.
-
-## 2. Install the window
-
-### macOS
-
-Install Xcode Command Line Tools if needed (`xcode-select --install`), then run:
+Ask Codex to follow [the installation skill](../skills/install-usage-meter/SKILL.md), or run from the repository:
 
 ```sh
-python3 native/build.py
-python3 native/install_hook.py
+python3 installers/install_sidebar.py
 ```
 
-### Windows
+Windows: `py -3 installers/install_sidebar.py`. To build the ZIP: `python3 installers/build_package.py`. CI runs provide the ZIP in the Actions artifacts.
 
-Use native PowerShell, not WSL. Install [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) if missing, then run:
-
-```powershell
-py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r native/requirements-windows.txt
-.\.venv\Scripts\python.exe native/build.py
-.\.venv\Scripts\python.exe native/install_autostart.py
-.\.venv\Scripts\python.exe native/install_hook.py
-```
-
-Keep `.venv`; the window uses it. The autostart step registers the window for the current Windows user at sign-in, without administrator privileges. It does not require Codex CLI hooks, so it also works for desktop-only users. The hook remains available for opening the window after a CLI message.
-
-To disable sign-in startup later, run `.\.venv\Scripts\python.exe native/install_autostart.py --remove`.
-
-## 3. Start
-
-On Windows, the window opens at the next sign-in. For immediate opening, use [Open manually](REFERENCE.md#open-manually).
-
-In Codex CLI, open **`/hooks`** and trust the **SessionStart** and **UserPromptSubmit** entries pointing to **`floating.py hook`**. Starting or resuming a conversation launches the window; sending a message is also a fallback. Opening Codex without starting/resuming a conversation is not a session event. For an existing installation, rerun the hook installer above to add the startup hook.
-
-
-That's it. You do not need the optional Codex plugin for the floating window.
-
-[How to use it](USAGE.md) · [Open manually](REFERENCE.md#open-manually) · [Optional plugin / Tibo setup](REFERENCE.md#optional-codex-plugin)
-
-The standard installation excludes Tibo and the Chrome extension. For the experimental optional package, use `python3 install.py --with-tibo` (add `--enable` if needed). When running from source, set `CODEX_USAGE_TIBO=1` before starting the service to opt in.
+[Usage](USAGE.md) · [Legacy floating window](REFERENCE.md)

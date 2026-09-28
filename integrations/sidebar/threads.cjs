@@ -22,13 +22,15 @@ class ThreadReader {
       } catch { /* Failed reads remain unknown, never zero or stale cached totals. */ }
       this.records.set(id, { at: Date.now(), value });
     }
-    const totals = {}, details = {}, now = Date.now();
+    const totals = {}, details = {}, usages = {}, now = Date.now();
     for (const [id, record] of this.records) {
-      if (now - record.at >= FRESH_MS || record.value?.total == null) continue;
+      if (now - record.at >= FRESH_MS || !record.value) continue;
+      usages[id] = record.value;
+      if (record.value.total == null) continue;
       totals[id] = record.value.total;
       details[id] = record.value.detail;
     }
-    return { ok: true, checkedAt: now, totals, details };
+    return { ok: true, checkedAt: now, totals, details, usages };
   }
 }
 module.exports = { ThreadReader };

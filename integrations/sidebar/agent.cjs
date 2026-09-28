@@ -1,4 +1,5 @@
 'use strict';
+const fs = require('node:fs');
 const { RendererInjector } = require('./runtime.cjs');
 const { MeterService } = require('./service.cjs');
 const { ThreadReader } = require('./threads.cjs');
@@ -9,12 +10,19 @@ const meter = new MeterService(process.env.CODEX_METER_PYTHON || (process.platfo
 const threads = new ThreadReader();
 const injector = new RendererInjector({ port });
 let stopped = false, timer, nextQuota = 0, quotaPending = false;
-let accountData = null, accountUpdatedAt = 0, publicResets;
+const stopFile = process.env.CODEX_METER_STOP_FILE;
+function stopStamp() {
+  try { return stopFile ? fs.statSync(stopFile).mtimeMs : 0; } catch { return 0; }
+}
+const initialStop = stopStamp();
+const stopTimer = stopFile ? setInterval(() => { if (stopStamp() !== initialStop) void stop(); }, 500) : null;
+stopTimer?.unref();
+let accountData = null, accountUpdatedAt = 0, publicResets, activeSessions;
 async function renderQuota() {
   if (stopped || !accountUpdatedAt) return;
   const data = { ...accountData, publicResets: publicResets ?? accountData?.publicResets };
   // Announcement polling must not extend the freshness of account limits.
-  await injector.update({ ...quota(data), updatedAt: accountUpdatedAt });
+  await injector.update({ ...quota(data), activeSessions, updatedAt: accountUpdatedAt });
 }
 async function updatePublicResets() {
   try { publicResets = await meter.read('/api/public-resets', 3000); }
@@ -52,7 +60,16 @@ async function tick() {
         if (Array.isArray(requested)) for (const id of requested.slice(0, 2000)) ids.add(id);
         sessions.push(session);
       }
-      const snapshot = await threads.snapshot(ids, meter, () => stopped);
+      let catalog;
+      try {
+        const data = await meter.read('/api/threads?limit=100', 3000);
+        catalog = data.sessions.filter(s => s.updatedAt * 1000 >= Date.now() - 1800000);
+        for (const item of catalog) ids.add(item.id);
+      } catch { catalog = null; }
+      const prioritized = new Set([...(catalog || []).map(item => item.id), ...ids]);
+      const snapshot = await threads.snapshot(prioritized, meter, () => stopped);
+      activeSessions = { ok: catalog !== null, checkedAt: Date.now(), items: (catalog || []).map(item => ({ ...item, usage: snapshot.usages[item.id] })) };
+      await renderQuota();
       if (stopped) return;
       await Promise.allSettled(sessions.map(s => s.evaluate('window.__codexThreadTokens?.update(' + JSON.stringify(snapshot) + ')')));
     } else { await meter.stop(); nextQuota = 0; }
@@ -63,7 +80,7 @@ async function tick() {
 }
 async function stop() {
   if (stopped) return;
-  stopped = true; clearTimeout(timer); await meter.stop();
+  stopped = true; clearTimeout(timer); clearInterval(stopTimer); await meter.stop();
   await Promise.allSettled([...injector.sessions.values()].map(s => s.evaluate("window.__codexUsageBadge?.destroy(); window.__codexThreadTokens?.destroy(); window.__codexProjectColors?.destroy();")));
   injector.stop();
 }

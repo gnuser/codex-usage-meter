@@ -31,3 +31,7 @@ Adapted from [jaykinhoo9/codex-usage-badge](https://github.com/jaykinhoo9/codex-
 Quota rings include a live reset countdown in days (e.g. `2.5d`); conversation badges show whole-number cumulative tokens without hovering.
 
 Do not run this bridge alongside the original Usage Badge injector: they share component identifiers. Thread reads are bounded and cached briefly; large lists populate over multiple refresh cycles.
+
+## Unified usage panel
+
+Hover over the ring to open the panel; move into it to interact. Clicking the ring pins the same content. Click outside, close, or press Esc to dismiss. The panel combines account limits, chats active within 30 minutes, recent-turn bars, input/output/cache, expandable model usage, and expandable public reset news. The chat list scrolls instead of growing indefinitely. Conversation titles use Codex deep links. The separate floating window remains available.

@@ -19,11 +19,18 @@ function quota(data, now = Date.now()) {
   const first = rings[0] || { label: 'Week', percent: null, tone: 'muted', title: 'Account allowance unavailable' };
   return { ...first, tooltipRows: tooltipRows(rings, summary.resetCredits, data?.publicResets, now), resetCredits: summary.resetCredits, title: (rings.length ? rings.map(r => r.title).join('\n') : first.title) + '\n' + summary.details, windowLabel: first.label, mode: rings.length === 2 ? 'dual' : 'single', rings, updatedAt: now, stale: false };
 }
+function io(usage) {
+  const ratio = cacheRatio(usage || {});
+  return `In ${compact(usage?.input_tokens)} · Out ${compact(usage?.output_tokens)} · Cache ${ratio === null ? '—' : Math.round(ratio * 100) + '%'}`;
+}
 function thread(item) {
   const usage = item?.turns?.at(-1)?.usage || {};
   const ratio = cacheRatio(usage);
   const cache = ratio === null ? '—' : Math.round(ratio * 100) + '%';
-  return { total: Number.isSafeInteger(item?.total?.total_tokens) && item.total.total_tokens >= 0 ? item.total.total_tokens : null,
+  return { totals: `Turn ${compact(usage.total_tokens)} · Total ${compact(item?.total?.total_tokens)}`, io: io(usage),
+    bars: (item?.turns || []).slice(-10).map(t => valid(t.usage?.total_tokens) ? t.usage.total_tokens : null),
+    models: (item?.models || []).map(m => ({name: m.model, io: io(m.usage)})),
+    total: Number.isSafeInteger(item?.total?.total_tokens) && item.total.total_tokens >= 0 ? item.total.total_tokens : null,
     detail: `Total ${compact(item?.total?.total_tokens)} tokens\nTurn: In ${compact(usage.input_tokens)} · Out ${compact(usage.output_tokens)} · Cache ${cache}` };
 }
 module.exports = { quota, thread, compact };
