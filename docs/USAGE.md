@@ -26,3 +26,7 @@ Only conversations updated in the last **30 minutes** appear. Usage refreshes ab
 - **No automatic opening:** on Windows, rerun `native/install_autostart.py` with the installed virtual environment and check the current user's sign-in startup entry. For CLI prompt-driven opening, trust the hook in `/hooks`, then start a new conversation.
 
 [Install](INSTALL.md) · [History, Tibo, updates & reference](REFERENCE.md)
+
+### Public reset announcements
+
+Reset details and the optional sidebar tooltip read the free Codex Resets MCP (`https://codex-resets.com/mcp`) in the background every five minutes. No Chrome login or API key is needed. Only public status requests are sent; local conversations and account data stay local. This community feed reports public announcements and labels forecasts as unconfirmed. It does not determine your weekly reset time or reset-credit expiry; those still come from your account. Expired forecasts are hidden, and connection failures show unavailable without blocking local usage.

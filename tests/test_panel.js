@@ -81,6 +81,7 @@ const context = {
   fetch: async (path) => ({
     ok: true,
     json: async () => {
+      if (path === '/api/public-resets') return { status: 'ok', forecast: 'around DevDay', watchUntil: Date.now() / 1000 + 86400 };
       if (path === '/api/account') {
         accountReads++;
         if (releaseAccount === true)
@@ -140,6 +141,10 @@ vm.runInContext(fs.readFileSync('web/panel.js', 'utf8'), context);
   await window.refreshUsage();
   assert.equal(reads, 1, 'native heartbeat bypasses stale hidden state');
   await context.refreshQuota();
+  const readsBeforePublicRefresh = accountReads;
+  await context.refreshPublicResets();
+  assert.equal(accountReads, readsBeforePublicRefresh, 'public feed refresh does not wait for or refetch account');
+  assert.match(nodes.resetSummary.textContent, /Forecast \(unconfirmed\): around DevDay/);
   assert.ok(nodes.resetSummary.textContent.includes('Available resets: 3'));
   assert.ok(nodes.resetSummary.textContent.includes('Next credit expiry: '));
   assert.ok(nodes.resetSummary.textContent.includes('(2h 0m)'));

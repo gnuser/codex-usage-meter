@@ -2,12 +2,12 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-[Home](../../README.md) · [Watch the video](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](../media/product-story-cache.srt)
+[Home](../../README.md) · [Watch the video](https://gnuser.github.io/codex-usage-meter/) · [English subtitles](../media/product-story-sidebar.srt)
 
-- 90 seconds, 1920×1080 at 24 fps, H.264 video and AAC English audio.
-- Why it was built, conversation/model usage, the compact window, allowance/reset reminders, and optional Tibo updates.
+- 108 seconds, 1920×1080 at 24 fps, H.264 video and AAC English audio.
+- Why it was built, conversation/model usage, the compact window, allowance/reset reminders, optional sidebar mode, and optional Tibo updates.
 - The recording owner authorized local Qwen3-TTS voice cloning. The narration is AI-generated, not a new human recording.
-- Actual app captures with edited framing and pauses. Recorded counts and dates are historical, not live account information.
+- Original chapters use actual app captures with edited framing and pauses. The added sidebar chapter uses the real components in a simulated layout with sample data, clearly labeled on screen. Recorded counts and dates are historical, not live account information.
 - Original recordings, voice samples, and model weights are excluded.
 - Approved English narration: [story.json](story.json). English subtitles are included in the video and available separately.
 
@@ -26,3 +26,5 @@ python3 -m venv /tmp/usage-video-env
 Use `--output-dir PATH` to choose a preview directory. When publishing different narration, align scenes and subtitles with the new audio and accurately disclose its source.
 
 The [installation guide](../INSTALL.md) is the reference for installation commands.
+
+The 18-second sidebar chapter starts at 01:01.42. Its narration was generated locally with Qwen3-TTS using the previously authorized narration as the voice reference; no reference recording is included. Sidebar mode remains experimental and requires local debugging; the floating window is the default.

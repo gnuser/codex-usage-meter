@@ -9,15 +9,28 @@ const meter = new MeterService(process.env.CODEX_METER_PYTHON || (process.platfo
 const threads = new ThreadReader();
 const injector = new RendererInjector({ port });
 let stopped = false, timer, nextQuota = 0, quotaPending = false;
+let accountData = null, accountUpdatedAt = 0, publicResets;
+async function renderQuota() {
+  if (stopped || !accountUpdatedAt) return;
+  const data = { ...accountData, publicResets: publicResets ?? accountData?.publicResets };
+  // Announcement polling must not extend the freshness of account limits.
+  await injector.update({ ...quota(data), updatedAt: accountUpdatedAt });
+}
+async function updatePublicResets() {
+  try { publicResets = await meter.read('/api/public-resets', 3000); }
+  catch { publicResets = { status: 'unavailable' }; }
+  await renderQuota();
+}
 async function updateQuota() {
   if (quotaPending || Date.now() < nextQuota) return;
   quotaPending = true;
   nextQuota = Date.now() + 60000;
   try {
     const data = await meter.read('/api/account', 75000);
-    if (!stopped) await injector.update(quota(data));
+    accountData = data; accountUpdatedAt = Date.now();
+    await renderQuota();
   }
-  catch { if (!stopped) await injector.update(quota(null)); }
+  catch { accountData = null; accountUpdatedAt = Date.now(); await renderQuota(); }
   finally { quotaPending = false; }
 }
 async function tick() {
@@ -29,6 +42,8 @@ async function tick() {
       await meter.start();
       if (stopped) { await meter.stop(); return; }
       void updateQuota();
+      await updatePublicResets();
+      if (stopped) return;
       const sessions = [];
       const ids = new Set();
       for (const session of injector.sessions.values()) {

@@ -28,6 +28,7 @@ jobs:
       - run: node tests/test_tibo_background.js
       - run: node tests/test_quota_summary.js
       - run: node tests/test_sidebar.cjs
+      - run: node tests/test_sidebar_tooltip.cjs
       - run: node tests/test_sidebar_service.cjs
       - run: node tests/test_sidebar_threads.cjs
       - run: node --check web/panel.js

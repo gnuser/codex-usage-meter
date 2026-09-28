@@ -2,12 +2,12 @@
 
 [English](README.md) | **简体中文**
 
-成片：[product-story-cache.mp4](https://gnuser.github.io/codex-usage-meter/) · [英文字幕](../media/product-story-cache.srt)
+成片：[product-story-sidebar.mp4](https://gnuser.github.io/codex-usage-meter/) · [英文字幕](../media/product-story-sidebar.srt)
 
-- 90 秒，1920×1080、24 fps，H.264 视频和 AAC 英文音轨。
-- 制作原因、会话与模型用量、小窗设计、额度与重置提醒，以及可选的 Tibo 更新。
+- 108 秒，1920×1080、24 fps，H.264 视频和 AAC 英文音轨。
+- 制作原因、会话与模型用量、小窗设计、额度与重置提醒、可选侧栏，以及可选的 Tibo 更新。
 - 旁白经录音本人授权，使用 Qwen3-TTS 在本机克隆生成；是 AI 合成声音，不是新的真人录音。
-- 真实应用画面，经过取景与停顿剪辑。数字和日期为录制时状态，不代表当前账号信息。
+- 原章节为真实应用画面，经过取景与停顿剪辑；新增侧栏章节为真实组件的模拟演示。数字和日期不代表当前账号信息。
 - 原始录音、声音样本和模型权重不公开。
 - 已确认英文文案见 [story.json](story.json)。视频内置英文字幕，也可单独下载。
 
@@ -26,3 +26,5 @@ python3 -m venv /tmp/usage-video-env
 可用 `--output-dir 路径` 指定预览输出目录。发布新旁白时，应重新匹配画面与字幕时间轴，并准确标注声音来源。
 
 安装命令以 [安装指南](../INSTALL.zh-CN.md) 为准。
+
+新增 18 秒侧栏章节，从 01:01.42 开始，使用真实组件的模拟布局与演示数据，画面已注明。英文旁白以此前授权旁白为声音参考，在本机用 Qwen3-TTS 生成；参考声音未包含在仓库。侧栏模式为实验性可选功能，需要本机调试接口，默认仍为悬浮窗。

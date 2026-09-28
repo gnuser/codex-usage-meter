@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
+from usage_meter.public_resets import PublicResets
 from usage_meter.loopback import LoopbackHTTPServer
 from usage_meter.account import account_snapshot
 from usage_meter.ledger import Ledger, normalize_limits
@@ -20,6 +21,7 @@ ROOT = Path(__file__).resolve().parent
 class Service:
     def __init__(self, home=None, *, enable_tibo=None):
         self.ledger = Ledger(home)
+        self.public_resets = PublicResets()
         if enable_tibo is None:
             enable_tibo = os.environ.get('CODEX_USAGE_TIBO') == '1' or (ROOT / '.tibo-enabled').is_file()
         self.public_posts = None
@@ -44,6 +46,7 @@ class Service:
         return f'http://127.0.0.1:{self.server.server_port}{path}#{fragment}'
 
     def close(self):
+        self.public_resets.close()
         if self.public_posts is not None:
             self.public_posts.close()
         if self.server:
@@ -122,6 +125,8 @@ def create_server(service, port=0):
             thread_id = query.get('thread', [None])[0]
             if thread_id and (len(thread_id) > 128 or not all(c.isalnum() or c in '-_' for c in thread_id)):
                 return self.reply(400, {'error': 'Invalid thread id'})
+            if url.path == '/api/public-resets':
+                return self.reply(200, service.public_resets.snapshot())
             if url.path == '/api/tibo':
                 if service.public_posts is None:
                     return self.reply(404, {'error': 'Not found'})
@@ -151,6 +156,7 @@ def create_server(service, port=0):
             if url.path == '/api/account':
                 account = account_snapshot(service.ledger.home, thread_id)
                 account['windows'] = normalize_limits(account['limits'])
+                account['publicResets'] = service.public_resets.snapshot()
                 return self.reply(200, account)
             return self.reply(404, {'error': 'Not found'})
     return LoopbackHTTPServer(('127.0.0.1', port), Handler)
@@ -167,6 +173,8 @@ TOOL_DEFS = [
 TOOL_DEFS[2]['inputSchema']['properties']['view'] = {'type': 'string', 'enum': ['full', 'panel'], 'default': 'full', 'description': 'panel: compact auto-refresh list of sessions active in the last 30 minutes; requires current thread_id as launch context.'}
 for definition in TOOL_DEFS:
     definition['annotations'] = {'readOnlyHint': True, 'destructiveHint': False, 'openWorldHint': False}
+# Account snapshots also request public announcements from the external reset MCP.
+TOOL_DEFS[1]['annotations']['openWorldHint'] = True
 TOOL_DEFS[0]['inputSchema']['properties']['limit'] = {'type': 'integer', 'minimum': 1, 'maximum': 1000, 'default': 1, 'description': 'Start with 1 latest session; increase by 3 only when requested.'}
 TOOL_DEFS[0]['description'] = 'Read only the latest 1 local session by default. Explicitly increase limit by 3 to load more. Latest session is not necessarily the current task.'
 
@@ -193,6 +201,7 @@ def dispatch(service, request):
         elif name == 'usage_account':
             result = account_snapshot(service.ledger.home, thread_id)
             result['windows'] = normalize_limits(result['limits'])
+            result['publicResets'] = service.public_resets.snapshot()
         elif name == 'usage_dashboard':
             result = {'url': service.dashboard(thread_id, args.get('view', 'full')), 'note': '仅本机访问；MCP 进程退出后链接失效。'}
         else:

@@ -1,5 +1,6 @@
 'use strict';
 const { compact, cacheRatio } = require('../../web/chart-math.js');
+const { tooltipRows } = require('./tooltip.cjs');
 const { summarize } = require('../../web/quota-summary.js');
 const valid = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
 function quota(data, now = Date.now()) {
@@ -16,7 +17,7 @@ function quota(data, now = Date.now()) {
   });
   const summary = summarize(data, now);
   const first = rings[0] || { label: 'Week', percent: null, tone: 'muted', title: 'Account allowance unavailable' };
-  return { ...first, resetCredits: summary.resetCredits, title: (rings.length ? rings.map(r => r.title).join('\n') : first.title) + '\n' + summary.details, windowLabel: first.label, mode: rings.length === 2 ? 'dual' : 'single', rings, updatedAt: now, stale: false };
+  return { ...first, tooltipRows: tooltipRows(rings, summary.resetCredits, data?.publicResets, now), resetCredits: summary.resetCredits, title: (rings.length ? rings.map(r => r.title).join('\n') : first.title) + '\n' + summary.details, windowLabel: first.label, mode: rings.length === 2 ? 'dual' : 'single', rings, updatedAt: now, stale: false };
 }
 function thread(item) {
   const usage = item?.turns?.at(-1)?.usage || {};

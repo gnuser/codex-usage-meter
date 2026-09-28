@@ -1,5 +1,5 @@
 function installUsageBadge() {
-  const VERSION = 'usage-meter-46-7';
+  const VERSION = 'usage-meter-46-8';
   const KEY = '__codexUsageBadge';
   if (window[KEY]?.version === VERSION) {
     window[KEY].place();
@@ -106,21 +106,34 @@ function installUsageBadge() {
     }
     #codex-usage-tooltip {
       box-sizing: border-box; position: fixed; z-index: 2147483000;
-      max-width: min(300px, calc(100vw - 16px)); padding: 10px 12px;
+      width: 264px; max-width: calc(100vw - 16px); padding: 10px 12px;
+      --tip-normal: #237354; --tip-info: #2768a8; --tip-warning: #94600c; --tip-danger: #b43b35;
       border: 1px solid color-mix(in srgb, currentColor 12%, transparent); border-radius: 10px;
       background: var(--color-surface-elevated-secondary, #f8f8f7);
       color: var(--color-text-primary, #303630);
       box-shadow: 0 4px 18px #0002; pointer-events: none;
-      font: 12px/1.65 -apple-system, BlinkMacSystemFont, sans-serif;
+      font: 12px/1.4 -apple-system, BlinkMacSystemFont, sans-serif;
       white-space: pre-line; -webkit-app-region: no-drag;
     }
+    #codex-usage-tooltip .tip-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; padding: 3px 0; white-space: normal; }
+    #codex-usage-tooltip .tip-label { opacity: .65; }
+    #codex-usage-tooltip .tip-value { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    #codex-usage-tooltip .tip-note { grid-column: 1 / -1; text-align: right; opacity: .7; font-size: 11px; overflow-wrap: anywhere; }
+    #codex-usage-tooltip .tip-group { border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); margin-top: 5px; padding-top: 7px; }
+    #codex-usage-tooltip .tip-footer { font-size: 10px; margin-top: 5px; opacity: .65; }
+    #codex-usage-tooltip [data-tone="normal"] .tip-value { color: var(--tip-normal); }
+    #codex-usage-tooltip [data-tone="info"] .tip-value { color: var(--tip-info); }
+    #codex-usage-tooltip [data-tone="warning"] .tip-value { color: var(--tip-warning); }
+    #codex-usage-tooltip [data-tone="danger"] .tip-value { color: var(--tip-danger); }
     html.dark #codex-usage-tooltip, html[data-theme="dark"] #codex-usage-tooltip {
+       --tip-normal: #82cbaa; --tip-info: #93bdf4; --tip-warning: #e9bd78; --tip-danger: #ff9587;
       background: var(--color-surface-elevated-secondary, #2c2e2c);
       color: var(--color-text-primary, #edf0ed);
     }
     @media (prefers-color-scheme: dark) {
       html:not(.light):not([data-theme="light"]) #codex-usage-tooltip {
-        background: var(--color-surface-elevated-secondary, #2c2e2c); color: var(--color-text-primary, #edf0ed);
+         --tip-normal: #82cbaa; --tip-info: #93bdf4; --tip-warning: #e9bd78; --tip-danger: #ff9587;
+      background: var(--color-surface-elevated-secondary, #2c2e2c); color: var(--color-text-primary, #edf0ed);
       }
     }
     @media (prefers-reduced-motion: reduce) { #codex-usage-badge .usage-ring-value { transition: none; } }
@@ -191,6 +204,28 @@ function installUsageBadge() {
       for (const attr of ['role', 'aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-valuetext']) element.removeAttribute(attr);
     }
   }
+  let tooltipSignature = '';
+  function renderTooltip() {
+    const rows = !value.stale && Array.isArray(value.tooltipRows) ? value.tooltipRows : null;
+    const signature = JSON.stringify(rows || value.title);
+    if (signature === tooltipSignature) return;
+    tooltipSignature = signature;
+    tooltip.replaceChildren();
+    if (!rows) { tooltip.textContent = value.title; return; }
+    for (const row of rows) {
+      const line = document.createElement('div');
+      line.className = 'tip-row' + (row.group ? ' tip-group' : '') + (row.footer ? ' tip-footer' : '');
+      line.dataset.tone = row.tone;
+      for (const [kind, text] of [['label', row.label], ['value', row.value], ['note', row.note]]) {
+        if (text == null) continue;
+        const part = document.createElement('span');
+        part.className = 'tip-' + kind;
+        part.textContent = text;
+        line.appendChild(part);
+      }
+      tooltip.appendChild(line);
+    }
+  }
   function render() {
     const dual = value.mode === 'dual' && value.rings?.length === 2;
     const percent = Number.isFinite(value.percent) ? Math.max(0, Math.min(100, Math.round(value.percent))) : null;
@@ -211,7 +246,7 @@ function installUsageBadge() {
       if (percent === null) badge.removeAttribute('aria-valuenow');
       else badge.setAttribute('aria-valuenow', String(percent));
     }
-    if (tooltip.textContent !== value.title) tooltip.textContent = value.title;
+    renderTooltip();
   }
   function place() {
     if (disposed || !document.body) return;

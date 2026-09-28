@@ -14,6 +14,18 @@
     return minutes + 'm';
   }
 
+  function publicResetDetails(value, now) {
+    if (!value) return '';
+    const heading = '\nPublic resets · codex-resets.com (community)';
+    if (value.status !== 'ok') return heading + '\n' + (value.status === 'loading' ? 'Loading announcements…' : 'Announcements unavailable');
+    const date = t => new Date(t * 1000).toLocaleString('en-US');
+    let text = heading + '\nLatest announcement: ' + (timestamp(value.latestAt) ? date(value.latestAt) : 'Unknown');
+    if (value.scheduled) text += '\nAnnounced reset: awaiting execution confirmation';
+    if (timestamp(value.watchUntil) && value.watchUntil * 1000 > now && value.forecast)
+      text += '\nForecast (unconfirmed): ' + value.forecast + '\nWatch expires: ' + date(value.watchUntil);
+    return text;
+  }
+
   function summarize(data, now = Date.now()) {
     const windows = Array.isArray(data?.windows) ? data.windows : [];
     const credits = data?.limits?.rateLimitResetCredits;
@@ -93,7 +105,7 @@
       resetCredits: { count, expiresAt: count === 0 ? null : earliest, expired: count !== 0 && expired },
       title,
       status,
-      details,
+      details: details + publicResetDetails(data?.publicResets, now),
       summary: windows.length
         ? windows.map((w) => label(w) + ' left ' + remaining(w)).join(' / ')
         : 'Left —',

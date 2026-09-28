@@ -4,9 +4,9 @@
 
 用一个小悬浮窗查看 Codex 最近活跃的会话、输入／输出 token 和剩余周额度。不用时收进 **macOS 菜单栏**或 **Windows 系统托盘**。
 
-[![观看 90 秒演示](docs/media/product-story-cache.png)](https://gnuser.github.io/codex-usage-meter/)
+[![观看 108 秒演示](docs/media/product-story-sidebar.png)](https://gnuser.github.io/codex-usage-meter/)
 
-[观看演示](https://gnuser.github.io/codex-usage-meter/) · 英文克隆旁白，已获本人授权；真实应用画面。
+[观看演示](https://gnuser.github.io/codex-usage-meter/) · 英文克隆旁白，已获本人授权；真实应用画面与已标注的侧栏模拟演示。
 
 ## 一句话安装
 
@@ -23,7 +23,7 @@ Codex 会按系统完成配置。Windows 登录后会自动启动小窗；使用
 - 在 Codex 发消息，最近活跃会话就会出现在列表中。
 - 点会话标题，打开对应对话。
 - 点 **▸**，查看各模型用量。
-- 点额度百分比，查看重置详情。
+- 点额度百分比，查看重置详情和 [Codex Resets](https://codex-resets.com) 的公开重置公告。
 - 关闭小窗即可收起，从菜单栏或托盘恢复。
 
 [使用与常见问题](docs/USAGE.zh-CN.md) · [可选功能与详细参考](docs/REFERENCE.zh-CN.md)
