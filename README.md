@@ -26,6 +26,8 @@ Codex handles setup for your OS. On Windows, the window starts when you sign in;
 - Click the allowance percentage for reset details.
 - Close the window to hide it; restore it from the menu bar or tray.
 
+[Experimental sidebar rings and conversation badges](integrations/sidebar/README.md) · Optional, requires a local debugging endpoint.
+
 [Usage & quick fixes](docs/USAGE.md) · [Optional integrations & reference](docs/REFERENCE.md)
 
 Unofficial project. Logs are read locally. Tokens and subscription allowance are different measurements. Do not share panel URLs containing access keys.

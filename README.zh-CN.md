@@ -29,3 +29,5 @@ Codex 会按系统完成配置。Windows 登录后会自动启动小窗；使用
 [使用与常见问题](docs/USAGE.zh-CN.md) · [可选功能与详细参考](docs/REFERENCE.zh-CN.md)
 
 非官方项目，日志在本机读取。token 用量不等于订阅额度。不要分享含访问密钥的面板链接。
+
+可选：[侧栏圆环与会话用量色块（实验性）](integrations/sidebar/README.zh-CN.md)，需要本机调试接口。

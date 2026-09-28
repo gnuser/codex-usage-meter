@@ -90,6 +90,7 @@
           (earliest == null ? 'Unknown' : date(earliest) + ' (' + countdown(earliest, now) + ')')
         : '');
     return {
+      resetCredits: { count, expiresAt: count === 0 ? null : earliest, expired: count !== 0 && expired },
       title,
       status,
       details,
