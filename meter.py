@@ -6,10 +6,11 @@ import os
 import secrets
 import sys
 import threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
+from usage_meter.loopback import LoopbackHTTPServer
 from usage_meter.account import account_snapshot
 from usage_meter.ledger import Ledger, normalize_limits
 
@@ -152,7 +153,7 @@ def create_server(service, port=0):
                 account['windows'] = normalize_limits(account['limits'])
                 return self.reply(200, account)
             return self.reply(404, {'error': 'Not found'})
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    return LoopbackHTTPServer(('127.0.0.1', port), Handler)
 
 
 TOOL_DEFS = [
