@@ -60,7 +60,7 @@ def select_session(payload, folder, stamp=None):
 
 
 def launch(folder):
-    if (folder / 'paused').exists():
+    if (folder / 'paused').exists() or (folder / 'sidebar-mode').exists():
         return
     if not window_command(folder):
         return  # Build/install once, never during a prompt.
@@ -82,7 +82,7 @@ def daemon(folder):
     try:
         with file_lock(folder / 'daemon.lock', blocking=False):
             command = window_command(folder)
-            if (folder / 'paused').exists() or not command:
+            if (folder / 'paused').exists() or (folder / 'sidebar-mode').exists() or not command:
                 return
             service = Service()
             try:
@@ -108,6 +108,7 @@ def main():
             parser.error('show requires --thread')
         folder.mkdir(parents=True, exist_ok=True, mode=0o700)
         (folder / 'paused').unlink(missing_ok=True)
+        (folder / 'sidebar-mode').unlink(missing_ok=True)
         if select_session({'hook_event_name': 'UserPromptSubmit', 'session_id': args.thread}, folder):
             atomic_json(folder / 'show.json', {'at': time.time_ns()})
             launch(folder)

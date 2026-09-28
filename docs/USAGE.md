@@ -1,32 +1,25 @@
-# Use the window
+# Use
 
-**English** | [简体中文](USAGE.zh-CN.md) · [Home](../README.md)
+**English** | [简体中文](USAGE.zh-CN.md)
 
-| Control | Action |
-| --- | --- |
-| Conversation title | Open it in Codex |
-| **▸** beside a conversation | Show input/output totals by model |
-| Allowance percentage | Show reset details |
-| Close button | Hide to menu bar / tray |
-| Menu bar summary / double-click tray icon | Restore the window |
+Open **Codex Usage Meter** to launch Codex with the sidebar enabled.
 
-**Turn** is the current turn; **Total** is the conversation total. **In / Out** means input/output tokens. `K` = thousand, `M` = million, `B` = billion.
+- **Hover the ring:** show the panel. Move the mouse into it to interact.
+- **Click the ring / pin:** keep the same panel open. Click outside, close, or press Esc to dismiss.
+- **Account summary:** weekly allowance, reset countdown, available reset credits and first expiry. Exact times are available on hover.
+- **Chats:** only conversations active in the last 30 minutes; scroll for more. Click a title to open it, or the arrow for per-model usage. Bars show recent turns; In/Out/Cache show the latest turn. Missing values stay unknown.
+- **Reset news:** expand for public announcement sources and forecasts. Forecasts are unconfirmed, and cannot determine your personal reset time or reset-credit expiry.
 
-**Cache** is cached input tokens divided by input tokens, shown for the current turn without expanding. Expand for each model’s cumulative share. Values are rounded to whole numbers; missing data is `—`. This is a token share, not a request hit rate.
+The public feed uses `https://codex-resets.com/mcp` every five minutes. No login or API key is needed; no conversation or account data is uploaded. The panel polls its local cache independently from account limits.
 
-The title shows weekly allowance and its automatic reset countdown. The footer shows available manual resets and when the next reset credit expires. **Credit expiry does not restore allowance.**
+## Troubleshooting
 
-Only conversations updated in the last **30 minutes** appear. Usage refreshes about every **5 seconds**, allowance every **5 minutes**. A routing name such as `jev/auto` does not reveal the actual backend model.
+If the ring is missing, quit Codex normally and reopen through **Codex Usage Meter**. Stop any old terminal-based sidebar service first. Client updates can change the UI and require a plugin update.
 
-## Quick fixes
+If installation or launch fails, read `sidebar-error.txt` / `sidebar.log` in `~/Library/Application Support/CodexUsageMeter` (Mac) or `%LOCALAPPDATA%\CodexUsageMeter` (Windows). Do not share `connection.json` or panel URLs containing keys.
 
-- **Missing window:** check the menu bar or hidden tray icons, then [open manually](REFERENCE.md#open-manually).
-- **Empty list:** send a message in Codex and wait for the log update.
-- **Allowance shows `—`:** check Codex CLI sign-in. Token statistics work independently.
-- **No automatic opening:** on Windows, rerun `native/install_autostart.py` with the installed virtual environment and check the current user's sign-in startup entry. For CLI prompt-driven opening, trust the hook in `/hooks`, then start a new conversation.
+To stop the packaged service, run `python -m usage_meter.sidebar_start --stop` from its installed payload or the source checkout, using the same application-data directory. Quit Codex and reopen its ordinary icon to disable debugging.
 
-[Install](INSTALL.md) · [History, Tibo, updates & reference](REFERENCE.md)
+The old floating window is paused by installation. It remains an explicit fallback: run `floating.py show --thread ACTUAL_THREAD_ID` from a full source checkout to re-enable it. This is not required for sidebar usage.
 
-### Public reset announcements
-
-Reset details and the optional sidebar tooltip read the free Codex Resets MCP (`https://codex-resets.com/mcp`) in the background every five minutes. No Chrome login or API key is needed. Only public status requests are sent; local conversations and account data stay local. This community feed reports public announcements and labels forecasts as unconfirmed. It does not determine your weekly reset time or reset-credit expiry; those still come from your account. Expired forecasts are hidden, and connection failures show unavailable without blocking local usage.
+[Install](INSTALL.md) · [Technical details](../integrations/sidebar/README.md)

@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-A small floating window for Codex usage. See recent conversations, input/output tokens, and remaining weekly allowance. Hide it in the **macOS menu bar** or **Windows system tray** when you need more space.
+A compact Codex sidebar panel for account limits, recent chats, input/output tokens, cache usage, and public reset news. Hover to view; click to pin.
 
 [![Watch the 108-second demo](docs/media/product-story-sidebar.png)](https://gnuser.github.io/codex-usage-meter/)
 
@@ -14,19 +14,19 @@ Paste this into Codex:
 
 > Install Codex Usage Meter by following this skill: https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
 
-Codex handles setup for your OS. On Windows, the window starts when you sign in; CLI users can also review and trust the hook once in `/hooks` for prompt-driven opening.
+Codex installs a per-user launcher. Or extract `CodexUsageMeter.zip` and double-click the installer for your OS. Requires Python 3.10+ and Node.js 24+; no native build, hooks, or terminal window needed.
 
 [Manual installation](docs/INSTALL.md)
 
 ## Use
 
-- Send a message in Codex: recently active conversations appear.
-- Click a title to open that conversation.
-- Click **▸** for usage by model.
-- Click the allowance percentage for reset details, including public reset announcements from [Codex Resets](https://codex-resets.com).
-- Close the window to hide it; restore it from the menu bar or tray.
+- Open **Codex Usage Meter** instead of the ordinary Codex icon.
+- Hover the sidebar ring to view the unified panel; click to pin it.
+- Click a chat title to open it, or **▸** for usage by model.
+- Expand reset news for sources and unconfirmed forecasts.
+- Click outside or press **Esc** to close the panel.
 
-[Experimental sidebar rings and conversation badges](integrations/sidebar/README.md) · Optional, requires a local debugging endpoint.
+Sidebar mode uses a local debugging endpoint and remains experimental; never expose its port. The legacy floating window is available as a fallback in the reference docs.
 
 [Usage & quick fixes](docs/USAGE.md) · [Optional integrations & reference](docs/REFERENCE.md)
 

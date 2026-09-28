@@ -1,62 +1,27 @@
 # 安装
 
-[English](INSTALL.md) | **简体中文** · [首页](../README.zh-CN.md)
+[English](INSTALL.md) | **简体中文**
 
-需要 **Python 3.10+**、Git 和 Codex。查询账号额度还需登录 Codex CLI。
+默认使用紧凑侧栏面板，不再需要浮窗、信任 hook、原生编译或终端常驻。
 
-## 交给 Codex 安装
+1. 准备 **Python 3.10+** 和 **Node.js 24+**；Mac 如有 Codex 自带的 Node，安装器会自动复用。
+2. 解压 `CodexUsageMeter.zip`，双击 **Install.command**（Mac）或 **Install.cmd**（Windows）。
+3. 正常退出 Codex、旧浮窗和旧侧栏终端，再打开 **Codex Usage Meter**：Mac 位于 `~/Applications`，Windows 位于桌面。
 
-直接发送：
+文件会复制到当前用户的应用数据目录，之后可删除解压目录，但需保留 Python、Node。更新时重复上述步骤即可，不修改会话日志。旧浮窗的自动打开会暂停。
 
-> 请按照这个 skill 帮我安装 Codex Usage Meter：https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md
+这是源码安装包，不是内置所有运行环境、已签名公证的独立二进制包。Mac 下载保护可能需要在“隐私与安全性”中批准安装器。启动入口会启用**仅本机的调试接口**，不会强制退出 Codex；不要对外开放或转发端口。以后从这个入口打开 Codex 才有侧栏；正常退出后，从原 Codex 图标打开会关闭调试。客户端升级可能影响这一实验性功能。
 
-它会完成系统配置并尝试打开小窗。自动启动只需在 `/hooks` 中确认信任一次。下面是可选的手动步骤。
+找不到 Codex 时，将 `CODEX_METER_APP` 设置为 `.app` 或可执行文件路径；Windows 商店版可能需要显式指定可访问的程序路径。失败会显示错误说明，日志位于应用数据目录 `CodexUsageMeter/sidebar.log`。
 
-## 1. 下载
+## 源码／一句话安装
 
-```sh
-git clone https://github.com/gnuser/codex-usage-meter.git
-cd codex-usage-meter
-```
-
-后续命令都在此目录执行，安装后请保留这个目录。
-
-## 2. 安装小窗
-
-### macOS
-
-没有 Xcode Command Line Tools 时先运行 `xcode-select --install` 完成安装，再执行：
+让 Codex 按[安装 skill](../skills/install-usage-meter/SKILL.md)操作，或在项目目录执行：
 
 ```sh
-python3 native/build.py
-python3 native/install_hook.py
+python3 installers/install_sidebar.py
 ```
 
-### Windows
+Windows 使用 `py -3 installers/install_sidebar.py`。生成 ZIP：`python3 installers/build_package.py`；CI 运行页面的 Artifacts 也提供安装包。
 
-使用原生 PowerShell，不要用 WSL。如未安装，先装好 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)，再执行：
-
-```powershell
-py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r native/requirements-windows.txt
-.\.venv\Scripts\python.exe native/build.py
-.\.venv\Scripts\python.exe native/install_autostart.py
-.\.venv\Scripts\python.exe native/install_hook.py
-```
-
-请保留 `.venv`，小窗运行需要它。自启步骤会为当前 Windows 用户注册登录后启动，无需管理员权限；只使用 Codex 桌面版时也不依赖 CLI hook。hook 仍可在发送 CLI 消息后打开小窗。
-
-以后如需关闭登录自启，运行 `.\.venv\Scripts\python.exe native/install_autostart.py --remove`。
-
-## 3. 启动
-
-Windows 小窗会在下次登录时打开；要立即打开，可按[手动打开](REFERENCE.zh-CN.md#首次启动手动打开)操作。
-
-在 Codex CLI 中打开 **`/hooks`**，信任指向 **`floating.py hook`** 的 **SessionStart** 和 **UserPromptSubmit** 条目。启动或恢复会话时会启动小窗，发送消息也可触发。仅打开 Codex、尚未启动或恢复会话时，不保证触发。已安装用户重新运行上面的 hook 安装命令即可补上启动入口。
-
-
-完成。只用悬浮窗，无需再安装可选的 Codex 插件。
-
-[怎么使用](USAGE.zh-CN.md) · [手动打开](REFERENCE.zh-CN.md#首次启动手动打开) · [可选插件与 Tibo 设置](REFERENCE.zh-CN.md#5-可选安装为-codex-插件)
-
-标准安装不包含 Tibo 和 Chrome 扩展。实验性可选版使用 `python3 install.py --with-tibo`（需要时加 `--enable`）。源码运行时，在启动服务前设置 `CODEX_USAGE_TIBO=1` 才会启用。
+[使用说明](USAGE.zh-CN.md) · [旧版浮窗](REFERENCE.zh-CN.md)

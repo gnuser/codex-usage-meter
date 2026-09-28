@@ -5,3 +5,5 @@ codex-usage.json
 
 .venv/
 venv/
+
+dist/
