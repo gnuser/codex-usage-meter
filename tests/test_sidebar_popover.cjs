@@ -6,6 +6,9 @@ class Element {
   constructor(tag) { this.tag = tag; this.children = []; this.style = {}; this.attributes = {}; this.hidden = false; this._text = ''; }
   set textContent(value) { this._text = value; this.children = []; }
   get textContent() { return this._text + this.children.map(c => c.textContent).join(''); }
+  getBoundingClientRect() { return {left:100,top:100,bottom:123}; }
+  get offsetWidth() { return 120; }
+  get offsetHeight() { return 40; }
   setAttribute(k,v) { this.attributes[k] = v; }
   append(...nodes) { nodes.forEach(n => this.appendChild(n)); }
   appendChild(n) { n.remove(); n.parent = this; this.children.push(n); }
@@ -13,18 +16,34 @@ class Element {
   remove() { if (this.parent) this.parent.children = this.parent.children.filter(n => n !== this); this.parent = null; }
   insertBefore(n,b) { n.remove(); const i = b ? this.children.indexOf(b) : this.children.length; this.children.splice(i,0,n); n.parent = this; }
 }
-const context = {document: {createElement: tag => new Element(tag)}, Date};
+const context = {document: {createElement: tag => new Element(tag)}, Date, innerWidth:800, innerHeight:600};
 vm.createContext(context);
+vm.runInContext(fs.readFileSync('integrations/sidebar/chart-ui.js','utf8'), context);
 vm.runInContext(fs.readFileSync('integrations/sidebar/popover.js','utf8'), context);
 const panel = new Element('div');
-const view = context.createUsagePopover(panel, () => {}, () => {});
+const view = context.createUsagePopover(panel, () => {}, () => {}, context.createUsageCharts);
 const find = cls => {
  const walk = n => n.className === cls ? n : n.children.map(walk).find(Boolean);
  return walk(panel);
 };
-const item = {id:'00000000-0000-0000-0000-000000000001', title:'<script>plain text</script>',updatedAt:Date.now()/1000,usage:{totals:'Turn 10K',io:'In 9K',bars:[null,0,10],models:[{name:'Model',io:'In 9K'}]}};
+const item = {id:'00000000-0000-0000-0000-000000000001', title:'<script>plain text</script>',updatedAt:Date.now()/1000,usage:{totals:'Turn 10K',io:'In 9K',bars:[null,0,1200000],barTexts:['—','0','1M'],models:[{name:'Model',io:'In 9K'}]}};
 const data = {tooltipRows:[{label:'Week',value:'68% left',tone:'normal'},{label:'Resets in',value:'5d 12h',tone:'info'},{label:'Reset credits',value:'3'},{label:'First expires',value:'5d 6h'}],activeSessions:{ok:true,checkedAt:Date.now(),items:[item]}};
-view.update(data);
+view.update({...data,dailyUsage:{available:true,today:'2026-09-29',todayText:'—',latest:{date:'2026-09-28',text:'121M'},days:[{date:'2026-09-29',tokens:null,text:'—'}]}});
+assert.equal(find('up-daily-summary').textContent,'Today —');
+assert.match(find('up-daily-note').textContent,/Today pending/);
+find('up-day').onmouseenter();
+assert.equal(find('up-bar-tip').hidden,false);
+assert.match(find('up-bar-tip').textContent,/2026-09-29\nNot reported/);
+find('up-day').onmouseleave();
+assert.equal(find('up-bar-tip').hidden,true);
+const hoverBar = find('up-bars').children[2];
+hoverBar.onfocus();
+assert.match(find('up-bar-tip').textContent,/1M tokens/);
+view.hideTips();
+assert.equal(find('up-bar-tip').hidden,true,'closing panel clears tooltip before reopening');
+hoverBar.onfocus();
+hoverBar.onblur();
+assert.equal(find('up-bar-tip').hidden,true);
 assert.equal(find('up-link').textContent, item.title);
 assert.equal(find('up-remaining').textContent,'68% left');
 assert.equal(find('up-reset').textContent,'Reset in 5d 12h');

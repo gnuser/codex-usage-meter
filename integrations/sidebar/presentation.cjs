@@ -1,5 +1,6 @@
 'use strict';
 const { compact, cacheRatio } = require('../../web/chart-math.js');
+const { dailyUsage } = require('./daily.cjs');
 const { tooltipRows } = require('./tooltip.cjs');
 const { summarize } = require('../../web/quota-summary.js');
 const valid = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -17,18 +18,21 @@ function quota(data, now = Date.now()) {
   });
   const summary = summarize(data, now);
   const first = rings[0] || { label: 'Week', percent: null, tone: 'muted', title: 'Account allowance unavailable' };
-  return { ...first, tooltipRows: tooltipRows(rings, summary.resetCredits, data?.publicResets, now), resetCredits: summary.resetCredits, title: (rings.length ? rings.map(r => r.title).join('\n') : first.title) + '\n' + summary.details, windowLabel: first.label, mode: rings.length === 2 ? 'dual' : 'single', rings, updatedAt: now, stale: false };
+  return { ...first, dailyUsage: dailyUsage(data?.usage, now), tooltipRows: tooltipRows(rings, summary.resetCredits, data?.publicResets, now), resetCredits: summary.resetCredits, title: (rings.length ? rings.map(r => r.title).join('\n') : first.title) + '\n' + summary.details, windowLabel: first.label, mode: rings.length === 2 ? 'dual' : 'single', rings, updatedAt: now, stale: false };
 }
 function io(usage) {
   const ratio = cacheRatio(usage || {});
   return `In ${compact(usage?.input_tokens)} · Out ${compact(usage?.output_tokens)} · Cache ${ratio === null ? '—' : Math.round(ratio * 100) + '%'}`;
 }
 function thread(item) {
-  const usage = item?.turns?.at(-1)?.usage || {};
+  const turns = (item?.turns || []).slice(-10);
+  const usage = turns.at(-1)?.usage || {};
   const ratio = cacheRatio(usage);
   const cache = ratio === null ? '—' : Math.round(ratio * 100) + '%';
   return { totals: `Turn ${compact(usage.total_tokens)} · Total ${compact(item?.total?.total_tokens)}`, io: io(usage),
-    bars: (item?.turns || []).slice(-10).map(t => valid(t.usage?.total_tokens) ? t.usage.total_tokens : null),
+    bars: turns.map(t => valid(t.usage?.total_tokens) ? t.usage.total_tokens : null),
+    barTexts: turns.map(t => compact(t.usage?.total_tokens)),
+    barLabels: turns.map((t, i) => 'Turn ' + (t.number ?? i + 1)),
     models: (item?.models || []).map(m => ({name: m.model, io: io(m.usage)})),
     total: Number.isSafeInteger(item?.total?.total_tokens) && item.total.total_tokens >= 0 ? item.total.total_tokens : null,
     detail: `Total ${compact(item?.total?.total_tokens)} tokens\nTurn: In ${compact(usage.input_tokens)} · Out ${compact(usage.output_tokens)} · Cache ${cache}` };
