@@ -23,3 +23,5 @@ To stop the packaged service, run `python -m usage_meter.sidebar_start --stop` f
 The old floating window is paused by installation. It remains an explicit fallback: run `floating.py show --thread ACTUAL_THREAD_ID` from a full source checkout to re-enable it. This is not required for sidebar usage.
 
 [Install](INSTALL.md) · [Technical details](../integrations/sidebar/README.md)
+
+Daily tokens below the allowance use the official account usage response, with a seven-day mini chart. Expand the heading to see each day; hover a bar for its token count in K/M/B. Dates stay as reported by the account API. Today uses your local calendar date; a missing bucket is shown as pending/unknown, never zero or yesterday’s usage. Reports may be delayed.

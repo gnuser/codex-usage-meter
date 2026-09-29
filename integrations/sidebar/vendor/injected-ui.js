@@ -1,5 +1,5 @@
-function installUsageBadge(createPopover) {
-  const VERSION = 'usage-meter-47-3';
+function installUsageBadge(createPopover, createCharts) {
+  const VERSION = 'usage-meter-48-2';
   const KEY = '__codexUsageBadge';
   if (window[KEY]?.version === VERSION) {
     window[KEY].place();
@@ -158,7 +158,7 @@ function installUsageBadge(createPopover) {
     return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
   };
   let pinned = false;
-  const popover = createPopover(tooltip, () => { pinned = false; popover.setPinned(false); badge.focus(); hideTooltip(); }, togglePinned);
+  const popover = createPopover(tooltip, () => { pinned = false; popover.setPinned(false); badge.focus(); hideTooltip(); }, togglePinned, createCharts);
   function togglePinned() {
     pinned = !pinned; popover.setPinned(pinned);
     if (pinned) showTooltip(); else hideTooltip();
@@ -171,6 +171,7 @@ function installUsageBadge(createPopover) {
     clearTimeout(hoverTimer);
     hoverTimer = null;
     tooltip.hidden = true;
+    popover.hideTips();
     badge.setAttribute('aria-expanded', 'false');
   }
   function positionTooltip() {

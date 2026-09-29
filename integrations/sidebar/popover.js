@@ -1,5 +1,5 @@
 // Self-contained renderer passed into the badge bootstrap; no access keys or network.
-function createUsagePopover(panel, onClose, onPin) {
+function createUsagePopover(panel, onClose, onPin, createCharts) {
   const el = (tag, text, cls) => {
     const node = document.createElement(tag);
     if (text != null) node.textContent = text;
@@ -41,8 +41,6 @@ function createUsagePopover(panel, onClose, onPin) {
     #codex-usage-tooltip .up-link:hover { text-decoration:underline; }
     #codex-usage-tooltip .up-total { margin:3px 0 1px; opacity:.7; font-size:11px; }
     #codex-usage-tooltip .up-io { white-space:nowrap; font-size:11px; opacity:.8; }
-    #codex-usage-tooltip .up-bars { width:40px; height:23px; display:flex; align-items:flex-end; gap:2px; flex-shrink:0; }
-    #codex-usage-tooltip .up-bars i { flex:1; background:var(--tip-normal); border-radius:2px 2px 0 0; }
     #codex-usage-tooltip .up-models { margin:7px 0 0; padding-left:8px; border-left:2px solid #8884; }
     #codex-usage-tooltip .up-model { white-space:pre-line; font-size:11px; margin:5px 0; overflow-wrap:anywhere; }
     #codex-usage-tooltip .up-news summary { cursor:pointer; color:var(--tip-warning); list-style:none; display:flex; justify-content:space-between; }
@@ -60,6 +58,7 @@ function createUsagePopover(panel, onClose, onPin) {
   pin.onclick = onPin; close.onclick = onClose;
   actions.append(pin, close); header.append(el('span', 'Usage'), actions);
   const quota = el('div');
+  const charts = createCharts(el);
   const section = el('div', null, 'up-section');
   const listHeading = el('div', null, 'up-line up-sub');
   const count = el('span');
@@ -73,7 +72,7 @@ function createUsagePopover(panel, onClose, onPin) {
   const newsSection = el('div');
   news.append(newsTitle, newsBody);
   newsSection.append(news, newsNote);
-  panel.replaceChildren(style, header, quota, section, newsSection);
+  panel.replaceChildren(style, header, quota, charts.daily, section, newsSection, charts.tip);
   const cards = new Map();
   let quotaSignature = '';
   const validID = id => /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id);
@@ -125,12 +124,13 @@ function createUsagePopover(panel, onClose, onPin) {
         }
       });
     }
+    charts.update(value.stale ? null : value.dailyUsage);
     const active = value.activeSessions;
     const fresh = active && Date.now() - active.checkedAt < 30000;
     const items = fresh && active.ok ? active.items.filter(s => validID(s.id) && s.updatedAt * 1000 >= Date.now() - 1800000) : [];
     count.textContent = String(items.length) + ' chats';
     const ids = new Set(items.map(s => s.id));
-    for (const [id, record] of cards) if (!ids.has(id)) { record.card.remove(); cards.delete(id); }
+    for (const [id, record] of cards) if (!ids.has(id)) { record.card.remove(); cards.delete(id); charts.hide(); }
     if (!items.length) {
       list.textContent = !active ? 'Loading chats…' : !fresh || !active.ok ? 'Chats unavailable · Retrying' : 'No recent activity';
     } else {
@@ -145,8 +145,7 @@ function createUsagePopover(panel, onClose, onPin) {
         record.link.textContent = item.title; record.link.title = item.title;
         record.total.textContent = item.usage?.totals || 'Usage unavailable';
         record.io.textContent = item.usage?.io || 'In — · Out — · Cache —';
-        const values = item.usage?.bars || [], max = Math.max(1, ...values.map(n => n ?? 0));
-        record.bars.replaceChildren(...values.map(n => { const bar = el('i'); bar.style.height = (n == null ? 0 : Math.max(2, n / max * 23)) + 'px'; return bar; }));
+        charts.renderTurns(record.bars, item.usage);
         record.models.replaceChildren(...(item.usage?.models || []).map(m => el('div', m.name + '\n' + m.io, 'up-model')));
         if (!record.models.children.length) record.models.textContent = 'No model data';
       });
@@ -161,5 +160,5 @@ function createUsagePopover(panel, onClose, onPin) {
     newsNote.hidden = !forecast?.note;
     newsBody.textContent = publicRows.map(r => r.label + ': ' + r.value + (r.note ? '\n' + r.note : '')).join('\n');
   }
-  return { update, setPinned(value) { pin.setAttribute('aria-pressed', String(value)); pin.title = value ? 'Unpin panel' : 'Pin panel'; pin.setAttribute('aria-label', pin.title); } };
+  return { update, hideTips: charts.hide, setPinned(value) { pin.setAttribute('aria-pressed', String(value)); pin.title = value ? 'Unpin panel' : 'Pin panel'; pin.setAttribute('aria-label', pin.title); } };
 }
