@@ -1,5 +1,5 @@
 function installUsageBadge(createPopover, createCharts) {
-  const VERSION = 'usage-meter-48-2';
+  const VERSION = 'usage-meter-48-3';
   const KEY = '__codexUsageBadge';
   if (window[KEY]?.version === VERSION) {
     window[KEY].place();
@@ -244,7 +244,9 @@ function installUsageBadge(createPopover, createCharts) {
     if (disposed || !document.body) return;
     if (!style.isConnected) (document.head ?? document.documentElement).appendChild(style);
     if (!tooltip.isConnected) document.body.appendChild(tooltip);
-    const nextRail = [...document.querySelectorAll('nav[data-app-navigation-rail]')].find(visible);
+    const nextRail = [...document.querySelectorAll('nav[data-app-navigation-rail]')].find(visible)
+      ?? [...document.querySelectorAll('aside[data-app-shell-left-panel-appearance] nav')]
+        .find(el => visible(el) && el.getBoundingClientRect().width <= 96);
     if (rail !== nextRail) {
       if (rail) resizeObserver.unobserve(rail);
       rail = nextRail ?? null;
