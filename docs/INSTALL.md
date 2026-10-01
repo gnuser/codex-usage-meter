@@ -4,6 +4,8 @@
 
 The default is now a compact sidebar panel. No floating window, hook trust, native build, or open terminal is needed.
 
+[Download the latest installation package](https://github.com/gnuser/codex-usage-meter/releases/latest)
+
 1. Install **Python 3.10+** and **Node.js 24+** if missing. macOS can reuse the Codex bundled Node runtime when present.
 2. Extract `CodexUsageMeter.zip`, then double-click **Install.command** (Mac) or **Install.cmd** (Windows).
 3. Quit Codex, the old floating window, and any old sidebar terminal normally. Open **Codex Usage Meter** from `~/Applications` (Mac) or your Desktop (Windows).

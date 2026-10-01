@@ -4,6 +4,8 @@
 
 默认使用紧凑侧栏面板，不再需要浮窗、信任 hook、原生编译或终端常驻。
 
+[下载最新安装包](https://github.com/gnuser/codex-usage-meter/releases/latest)
+
 1. 准备 **Python 3.10+** 和 **Node.js 24+**；Mac 如有 Codex 自带的 Node，安装器会自动复用。
 2. 解压 `CodexUsageMeter.zip`，双击 **Install.command**（Mac）或 **Install.cmd**（Windows）。
 3. 正常退出 Codex、旧浮窗和旧侧栏终端，再打开 **Codex Usage Meter**：Mac 位于 `~/Applications`，Windows 位于桌面。

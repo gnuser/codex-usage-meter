@@ -1,5 +1,5 @@
 function installThreadTokens() {
-  const VERSION = 'usage-meter-6-3';
+  const VERSION = 'usage-meter-6-4';
   const KEY = '__codexThreadTokens';
   const ROW = '[data-app-action-sidebar-thread-row][data-app-action-sidebar-thread-id]';
   const MARK = 'data-codex-thread-tokens';
@@ -16,6 +16,13 @@ function installThreadTokens() {
   const style = document.createElement('style');
   style.id = 'codex-thread-tokens-style';
   style.textContent = `
+    /* Some client title wrappers are block/inline containers, not flex rows. */
+    ${ROW}:has(> [${MARK}]), ${ROW} :has(> [${MARK}]) {
+      display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; min-width: 0;
+    }
+    [${MARK}] + [data-thread-title] {
+      flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
     [${MARK}] { --token-0: #d6dce2; --token-1: #c4d5ec; --token-2: #90b2e1; --token-3: #5e90d0; --token-4: #2f6ebf;
       position: relative; display: inline-flex; align-items: center; gap: 5px; align-self: center; flex: 0 0 auto; min-width: 18px; height: 16px; padding: 0;
       font: 10px/16px -apple-system, BlinkMacSystemFont, sans-serif; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap;

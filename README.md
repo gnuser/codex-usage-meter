@@ -4,9 +4,9 @@
 
 A compact Codex sidebar panel for account limits, recent chats, input/output tokens, cache usage, and public reset news. Hover to view; click to pin.
 
-[![Watch the 108-second demo](docs/media/product-story-sidebar.png)](https://gnuser.github.io/codex-usage-meter/)
+[![Watch the 27-second demo](docs/media/badge-quick-guide.png)](https://gnuser.github.io/codex-usage-meter/)
 
-[Watch the demo](https://gnuser.github.io/codex-usage-meter/) · English narration using an authorized voice clone; app captures plus a labeled sidebar demonstration.
+[Watch the demo](https://gnuser.github.io/codex-usage-meter/) · English narration using an authorized voice clone; current components with labeled sample data.
 
 ## Install with one message
 
@@ -16,13 +16,14 @@ Paste this into Codex:
 
 Codex installs a per-user launcher. Or extract `CodexUsageMeter.zip` and double-click the installer for your OS. Requires Python 3.10+ and Node.js 24+; no native build, hooks, or terminal window needed.
 
-[Manual installation](docs/INSTALL.md)
+[Download latest release](https://github.com/gnuser/codex-usage-meter/releases/latest) · [Manual installation](docs/INSTALL.md)
 
 ## Use
 
 - Open **Codex Usage Meter** instead of the ordinary Codex icon.
 - Hover the sidebar ring to view the unified panel; click to pin it.
 - Click a chat title to open it, or **▸** for usage by model.
+- See seven days of daily tokens; hover a bar for its usage.
 - Expand reset news for sources and unconfirmed forecasts.
 - Click outside or press **Esc** to close the panel.
 

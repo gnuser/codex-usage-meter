@@ -37,7 +37,7 @@ def decode_response(raw, request_id):
 
 def fetch_status():
     opener = build_opener(NoRedirect())
-    headers = {'User-Agent': 'codex-usage-meter/1.3.0', 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream'}
+    headers = {'User-Agent': 'codex-usage-meter/1.4.0', 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream'}
 
     def send(method, params, request_id=None):
         payload = {'jsonrpc': '2.0', 'method': method, 'params': params}
@@ -54,7 +54,7 @@ def fetch_status():
         return decode_response(raw, request_id) if request_id is not None else None
 
     init = send('initialize', {'protocolVersion': '2025-03-26', 'capabilities': {},
-                              'clientInfo': {'name': 'codex-usage-meter', 'version': '1.3.0'}}, 1)
+                              'clientInfo': {'name': 'codex-usage-meter', 'version': '1.4.0'}}, 1)
     version = init.get('protocolVersion')
     if version != '2025-03-26':
         raise ValueError('Unsupported MCP protocol')

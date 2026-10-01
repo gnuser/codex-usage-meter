@@ -4,9 +4,9 @@
 
 在紧凑的 Codex 侧栏面板中查看额度、活跃会话、输入／输出 token、缓存和公开重置动态。悬停查看，点击固定。
 
-[![观看 108 秒演示](docs/media/product-story-sidebar.png)](https://gnuser.github.io/codex-usage-meter/)
+[![观看 27 秒演示](docs/media/badge-quick-guide.png)](https://gnuser.github.io/codex-usage-meter/)
 
-[观看演示](https://gnuser.github.io/codex-usage-meter/) · 英文克隆旁白，已获本人授权；真实应用画面与已标注的侧栏模拟演示。
+[观看演示](https://gnuser.github.io/codex-usage-meter/) · 英文克隆旁白，已获本人授权；当前界面组件与已标注的演示数据。
 
 ## 一句话安装
 
@@ -16,13 +16,14 @@
 
 Codex 会安装当前用户的启动入口。也可解压 `CodexUsageMeter.zip`，双击对应系统的安装器。需要 Python 3.10+、Node.js 24+，无需原生编译、hook 或终端常驻。
 
-[手动安装](docs/INSTALL.zh-CN.md)
+[下载最新版本](https://github.com/gnuser/codex-usage-meter/releases/latest) · [手动安装](docs/INSTALL.zh-CN.md)
 
 ## 使用
 
 - 从 **Codex Usage Meter** 入口打开 Codex。
 - 悬停侧栏圆环查看统一面板，点击固定。
 - 点击会话标题跳转，点 **▸** 查看模型明细。
+- 查看最近七天每日 token，悬停柱子查看具体用量。
 - 展开重置动态查看来源和未确认预测。
 - 点击外部或按 **Esc** 收起。
 
