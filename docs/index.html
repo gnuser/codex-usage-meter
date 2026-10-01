@@ -3,32 +3,99 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Codex Usage Meter · Demo</title>
-  <style>
-    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #10191e; color: #f1f6f7; }
-    body { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
-    h1 { font-size: clamp(24px, 4vw, 36px); margin: 0 0 8px; }
-    p { color: #aebfc8; line-height: 1.6; }
-    video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; margin: 24px 0; }
-    nav { display: flex; flex-wrap: wrap; gap: 12px 24px; }
-    a { color: #8ae1c0; text-underline-offset: 4px; }
-    a:focus-visible { outline: 2px solid #8ae1c0; outline-offset: 5px; }
-    small { display: block; margin-top: 24px; color: #aebfc8; }
-  </style>
+  <meta name="theme-color" content="#f5f6f2">
+  <meta name="description" content="A free sidebar companion for Codex. See account limits, per-chat tokens, cache usage, and daily activity on macOS and Windows.">
+  <meta property="og:title" content="Codex Usage Meter — Know where your tokens go">
+  <meta property="og:description" content="Account limits, chat usage, and daily tokens. A free sidebar companion for Codex on macOS and Windows.">
+  <meta property="og:type" content="website">
+  <title>Codex Usage Meter — Know where your tokens go</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='17' fill='%23152d26'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%23405e52' stroke-width='7'/%3E%3Cpath d='M32 13a19 19 0 1 1-18.1 13.2' fill='none' stroke='%239be5ba' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js" defer></script>
 </head>
 <body>
-  <h1>Codex Usage Meter</h1>
-  <p>A 27-second overview. Press play to watch with sound.</p>
-  <video controls playsinline preload="metadata" poster="media/badge-quick-guide.png" aria-label="Codex Usage Meter product overview">
-    <source src="media/badge-quick-guide.mp4" type="video/mp4">
-    <track kind="captions" src="media/badge-quick-guide.vtt" srclang="en" label="English">
-    Your browser cannot play this video. <a href="media/badge-quick-guide.mp4" download>Download the MP4</a>.
-  </video>
-  <nav aria-label="Video links">
-    <a href="media/badge-quick-guide.mp4" download>Download MP4</a>
-    <a href="https://github.com/gnuser/codex-usage-meter#readme">Install</a>
-    <a href="https://github.com/gnuser/codex-usage-meter/blob/main/README.zh-CN.md" lang="zh-CN">中文说明</a>
-  </nav>
-  <small>Authorized AI-cloned narration · Current components · Labeled sample data · Unofficial project</small>
+  <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#" aria-label="Codex Usage Meter home">
+        <span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><path d="M16 6a10 10 0 1 1-9.5 6.9"/></svg></span>
+        <span>Codex <strong>Usage Meter</strong></span>
+      </a>
+      <nav class="desktop-nav" aria-label="Main navigation" data-i18n-aria="nav">
+        <a href="#features" data-i18n="navFeatures">Features</a>
+        <a href="#demo" data-i18n="navDemo">Demo</a>
+        <a href="#faq" data-i18n="navFaq">FAQ</a>
+      </nav>
+      <div class="header-actions">
+        <button class="language-switch" id="language-switch" type="button" aria-label="Switch to Simplified Chinese" hidden>中文</button>
+        <a class="button button-small button-dark" href="#install" data-i18n="getFree">Get it free <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero container" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span><span data-i18n="heroLabel">FREE TOOL · MACOS + WINDOWS</span></div>
+        <h1 id="hero-title"><span data-i18n="heroLineOne">Know where your</span><br><span class="accent" data-i18n="heroLineTwo">Codex tokens go.</span></h1>
+        <p class="hero-description" data-i18n="heroDescription">Your limits, chats, and daily usage, together in the Codex sidebar. Hover for a quick look. Click to keep it open.</p>
+        <div class="hero-actions">
+          <a class="button button-dark" href="#install"><span data-i18n="installFree">Install for free</span><span aria-hidden="true">↗</span></a>
+          <a class="button button-outline" href="#demo"><span class="play-icon" aria-hidden="true">▶</span><span data-i18n="watchDemo">Watch the 27s demo</span></a>
+        </div>
+        <p class="hero-note" data-i18n="heroNote">Free to use. Source on GitHub.</p>
+        <div class="hero-details">
+          <div><span class="detail-label" data-i18n="detailOneLabel">IN YOUR WORKSPACE</span><strong data-i18n="detailOne">A small sidebar companion</strong></div>
+          <div><span class="detail-label" data-i18n="detailTwoLabel">ON YOUR MACHINE</span><strong data-i18n="detailTwo">Chat logs read locally</strong></div>
+        </div>
+      </div>
+      <figure class="product-figure">
+        <div class="preview-heading"><span class="preview-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-i18n="previewTitle">A little more clarity.</span><span class="preview-label" data-i18n="previewTag">IN CODEX</span></div>
+        <div class="preview-stage">
+          <div class="preview-crop"><img src="media/badge-quick-guide.png" width="1600" height="900" fetchpriority="high" alt="Codex sidebar usage panel with weekly allowance, a daily token chart, and per-chat input, output, and cache usage. The values are sample data." data-i18n-alt="previewAlt"></div>
+        </div>
+        <figcaption><span class="tiny-dot" aria-hidden="true"></span><span data-i18n="previewCaption">Actual components · Sample data</span></figcaption>
+      </figure>
+    </section>
+
+    <section id="features" class="features-section container" aria-labelledby="features-title">
+      <div class="section-heading"><div><p class="eyebrow" data-i18n="featuresLabel">LESS GUESSWORK</p><h2 id="features-title" data-i18n="featuresTitle">The numbers you keep checking.</h2></div><p class="section-description" data-i18n="featuresDescription">A compact view of the details that help you understand your usage.</p></div>
+      <div class="feature-grid">
+        <article class="feature"><span class="feature-number">01 /</span><div class="feature-icon" aria-hidden="true">◷</div><h3 data-i18n="featureOneTitle">Stay ahead of your reset.</h3><p data-i18n="featureOneBody">See your weekly allowance, reset countdown, and available reset credits at a glance.</p></article>
+        <article class="feature"><span class="feature-number">02 /</span><div class="feature-icon bars-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></div><h3 data-i18n="featureTwoTitle">Find the busy chats.</h3><p data-i18n="featureTwoBody">Compare input, output, and cached tokens across active chats. Expand a chat for model details.</p></article>
+        <article class="feature"><span class="feature-number">03 /</span><div class="feature-icon days-icon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><h3 data-i18n="featureThreeTitle">See your week in tokens.</h3><p data-i18n="featureThreeBody">A seven-day chart makes daily usage easy to scan. Hover over a bar to see its token count.</p></article>
+      </div>
+      <p class="measurement-note" data-i18n="measurementNote">Token counts and subscription allowance are different measurements. Missing data stays unknown; account reports may be delayed.</p>
+    </section>
+
+    <section id="demo" class="demo-section" aria-labelledby="demo-title">
+      <div class="container">
+        <div class="section-heading"><h2 id="demo-title" data-i18n="demoTitle">Demo</h2></div>
+        <div class="video-frame"><video controls playsinline preload="none" poster="media/badge-quick-guide.png" aria-label="Codex Usage Meter product overview" data-i18n-aria="videoLabel"><source src="media/badge-quick-guide.mp4" type="video/mp4"><track kind="captions" src="media/badge-quick-guide.vtt" srclang="en" label="English">Your browser cannot play this video. <a href="media/badge-quick-guide.mp4" download>Download the MP4</a>.</video></div>
+        <div class="video-caption"><span data-i18n="videoCaption">Sample data</span><a href="media/badge-quick-guide.mp4" download><span data-i18n="downloadVideo">Download video</span> <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+
+    <section id="install" class="install-section container" aria-labelledby="install-title">
+      <div class="install-intro"><p class="eyebrow" data-i18n="installLabel">GET STARTED</p><h2 id="install-title" data-i18n="installTitle">Let Codex help you install it.</h2><p data-i18n="installDescription">Copy this message into a Codex chat. It links to the project’s installation instructions and sets up a launcher for your user account.</p><div class="requirements"><h3 data-i18n="requirementsTitle">Before you start</h3><p data-i18n="requirementsBody">Codex desktop on macOS or Windows, Python 3.10+, and Node.js 24+. On macOS, the installer can reuse Codex’s bundled Node runtime when available.</p></div><p class="manual-link"><span data-i18n="manualLabel">Prefer to install it yourself?</span> <a href="https://github.com/gnuser/codex-usage-meter/blob/main/docs/INSTALL.md" data-doc="INSTALL" data-i18n="manualLink">Read the installation guide ↗</a></p></div>
+      <div class="install-card"><div class="install-card-header"><span class="step-pill">01</span><h3 id="prompt-label" data-i18n="copyTitle">Copy. Paste into Codex.</h3></div><textarea id="install-prompt" rows="4" readonly spellcheck="false" aria-labelledby="prompt-label">Install Codex Usage Meter by following this skill: https://raw.githubusercontent.com/gnuser/codex-usage-meter/main/skills/install-usage-meter/SKILL.md</textarea><div class="copy-row"><button class="button button-dark copy-button" id="copy-prompt" type="button" hidden><span data-i18n="copyButton">Copy install message</span><span aria-hidden="true">⧉</span></button><span id="copy-status" class="copy-status" role="status" aria-live="polite"></span></div><noscript><p>Select the message above and copy it into Codex.</p></noscript><div class="install-next"><span class="step-pill">02</span><div><h3 data-i18n="launchTitle">Open the new launcher.</h3><p data-i18n="launchBody">After installation, quit Codex normally. Open “Codex Usage Meter” from Applications on Mac or your Desktop on Windows.</p></div></div><div class="install-next"><span class="step-pill">03</span><div><h3 data-i18n="hoverTitle">Hover to peek. Click to pin.</h3><p data-i18n="hoverBody">Find the ring in the sidebar. Hover to see your usage, or click to keep the panel open.</p></div></div><a class="release-link" href="https://github.com/gnuser/codex-usage-meter/releases/latest"><span data-i18n="releaseLink">Or get the latest ZIP on GitHub</span><span aria-hidden="true">↓</span></a><p class="release-note" data-i18n="releaseNote">Choose CodexUsageMeter.zip. Extract it, then open Install.command (Mac) or Install.cmd (Windows).</p></div>
+      <aside class="compatibility-note"><span class="note-icon" aria-hidden="true">i</span><p><strong data-i18n="compatibilityTitle">Compatibility note.</strong> <span data-i18n="compatibilityBody">The launcher enables a local debugging endpoint; keep it on your machine and never expose or forward it. Codex updates can affect compatibility. This is a source installer, not a signed standalone app.</span> <a href="https://github.com/gnuser/codex-usage-meter/blob/main/docs/INSTALL.md" data-doc="INSTALL" data-i18n="compatibilityLink">Read the setup details ↗</a></p></aside>
+    </section>
+
+    <section id="faq" class="faq-section container" aria-labelledby="faq-title">
+      <div class="faq-intro"><p class="eyebrow" data-i18n="faqLabel">A FEW THINGS TO KNOW</p><h2 id="faq-title" data-i18n="faqTitle">Before your first hover.</h2><a class="text-link" href="https://github.com/gnuser/codex-usage-meter/issues" data-i18n="feedbackLink">Have feedback? Open an issue ↗</a></div>
+      <div class="faq-list">
+        <details><summary data-i18n="faqOneQuestion">Is it free?</summary><p data-i18n="faqOneAnswer">Yes. Codex Usage Meter is free to use, and its source is available on GitHub. It does not add credits or change your Codex plan.</p></details>
+        <details><summary data-i18n="faqThreeQuestion">Where does the data come from?</summary><p data-i18n="faqThreeAnswer">Chat logs are read locally. Account allowance and daily totals come from the Codex account API. The optional expanded reset-news view uses a public feed; conversation and account data are not sent to that feed.</p></details>
+        <details><summary data-i18n="faqFourQuestion">Do more tokens always mean less allowance?</summary><p data-i18n="faqFourAnswer">Token counts and subscription allowance measure different things. Use chat tokens to understand activity; use the account allowance to check your remaining limit. The meter does not turn token counts into an exact quota or dollar cost.</p></details>
+        <details><summary data-i18n="faqFiveQuestion">What if the sidebar ring is missing?</summary><p><span data-i18n="faqFiveAnswer">Quit Codex normally and reopen it with the Codex Usage Meter launcher. Stop any older sidebar service first. A client update may also require an update to the meter.</span> <a href="https://github.com/gnuser/codex-usage-meter/blob/main/docs/USAGE.md" data-doc="USAGE" data-i18n="troubleshootingLink">Usage and troubleshooting ↗</a></p></details>
+        <details><summary data-i18n="faqSixQuestion">Can I go back to the normal Codex app?</summary><p data-i18n="faqSixAnswer">Yes. Quit Codex, then open its ordinary app icon to run without the debugging endpoint. The installation does not modify your existing session logs. See the usage guide if you also need to stop the packaged service.</p></details>
+      </div>
+    </section>
+
+    <section class="closing-section container" aria-labelledby="closing-title"><div><p class="eyebrow" data-i18n="closingLabel">SMALL TOOL. CLEARER USAGE.</p><h2 id="closing-title" data-i18n="closingTitle">Keep your usage in view.</h2></div><a class="button button-dark" href="#install"><span data-i18n="installFree">Install for free</span><span aria-hidden="true">↗</span></a></section>
+  </main>
+
+  <footer class="container site-footer"><div><a class="footer-brand" href="#">Codex Usage Meter</a></div><nav aria-label="Project links" data-i18n-aria="footerNav"><a href="https://github.com/gnuser/codex-usage-meter">GitHub ↗</a><a href="https://github.com/gnuser/codex-usage-meter/releases/latest" data-i18n="footerReleases">Releases ↗</a><a href="https://github.com/gnuser/codex-usage-meter/blob/main/docs/USAGE.md" data-doc="USAGE" data-i18n="footerGuide">Usage guide ↗</a></nav></footer>
 </body>
 </html>
