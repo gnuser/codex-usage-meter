@@ -184,7 +184,7 @@ def dispatch(service, request):
     if method == 'initialize':
         version = params.get('protocolVersion')
         return {'protocolVersion': version if version in ('2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25') else '2024-11-05',
-                'capabilities': {'tools': {}}, 'serverInfo': {'name': 'codex-usage-meter', 'version': '1.3.0'}}
+                'capabilities': {'tools': {}}, 'serverInfo': {'name': 'codex-usage-meter', 'version': '1.4.0'}}
     if method == 'ping':
         return {}
     if method == 'tools/list':
