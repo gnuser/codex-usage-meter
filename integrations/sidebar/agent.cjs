@@ -18,9 +18,10 @@ const initialStop = stopStamp();
 const stopTimer = stopFile ? setInterval(() => { if (stopStamp() !== initialStop) void stop(); }, 500) : null;
 stopTimer?.unref();
 let accountData = null, accountUpdatedAt = 0, publicResets, activeSessions;
+let dailyData = null, nextDaily = 0, dailyPending = false;
 async function renderQuota() {
   if (stopped || !accountUpdatedAt) return;
-  const data = { ...accountData, publicResets: publicResets ?? accountData?.publicResets };
+  const data = { ...accountData, usage: dailyData, publicResets: publicResets ?? accountData?.publicResets };
   // Announcement polling must not extend the freshness of account limits.
   await injector.update({ ...quota(data), activeSessions, updatedAt: accountUpdatedAt });
 }
@@ -32,14 +33,24 @@ async function updatePublicResets() {
 async function updateQuota() {
   if (quotaPending || Date.now() < nextQuota) return;
   quotaPending = true;
-  nextQuota = Date.now() + 60000;
+  nextQuota = Date.now() + 15000;
   try {
-    const data = await meter.read('/api/account', 75000);
+    const data = await meter.read('/api/limits', 45000);
     accountData = data; accountUpdatedAt = Date.now();
     await renderQuota();
   }
   catch { accountData = null; accountUpdatedAt = Date.now(); await renderQuota(); }
   finally { quotaPending = false; }
+}
+// Daily analytics may be slow; it must never delay or overwrite fresh limits.
+async function updateDaily() {
+  if (dailyPending || Date.now() < nextDaily) return;
+  dailyPending = true;
+  nextDaily = Date.now() + 60000;
+  try { dailyData = (await meter.read('/api/account', 75000)).usage; }
+  catch { dailyData = null; }
+  finally { dailyPending = false; }
+  await renderQuota();
 }
 async function tick() {
   if (stopped) return;
@@ -50,6 +61,7 @@ async function tick() {
       await meter.start();
       if (stopped) { await meter.stop(); return; }
       void updateQuota();
+      void updateDaily();
       await updatePublicResets();
       if (stopped) return;
       const sessions = [];
@@ -72,9 +84,9 @@ async function tick() {
       await renderQuota();
       if (stopped) return;
       await Promise.allSettled(sessions.map(s => s.evaluate('window.__codexThreadTokens?.update(' + JSON.stringify(snapshot) + ')')));
-    } else { await meter.stop(); nextQuota = 0; }
+    } else { await meter.stop(); nextQuota = 0; nextDaily = 0; }
   } catch {
-    if (!injector.sessions.size) { await meter.stop(); nextQuota = 0; }
+    if (!injector.sessions.size) { await meter.stop(); nextQuota = 0; nextDaily = 0; }
   }
   finally { if (!stopped) timer = setTimeout(tick, 5000); }
 }

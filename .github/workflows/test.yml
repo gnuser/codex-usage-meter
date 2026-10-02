@@ -31,6 +31,7 @@ jobs:
       - run: node tests/test_sidebar_tooltip.cjs
       - run: node tests/test_sidebar_popover.cjs
       - run: node tests/test_sidebar_daily.cjs
+      - run: node tests/test_sidebar_refresh.cjs
       - run: node tests/test_sidebar_service.cjs
       - run: node tests/test_sidebar_threads.cjs
       - run: node --check web/panel.js
