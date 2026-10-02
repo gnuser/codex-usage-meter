@@ -25,6 +25,13 @@ class PublicResetTests(unittest.TestCase):
         self.assertNotIn('text', result)
         self.assertIsNone(normalize({'latest_reset': {'announced_at': '2026-09-26'}})['latestAt'])
 
+    def test_scheduled_reset_time_is_preserved(self):
+        result = normalize({'scheduled_reset': {'scheduled_for': '2026-10-02T17:00:00Z'}})
+        self.assertTrue(result['scheduled'])
+        self.assertEqual(result['scheduledFor'], 1790960400)
+        self.assertIsNone(normalize({'scheduled_reset': {}})['scheduledFor'])
+        self.assertIsNone(normalize({})['scheduledFor'])
+
     def test_background_cache_failure_and_close(self):
         entered, release, finished = threading.Event(), threading.Event(), threading.Event()
         now = [1000]
@@ -52,7 +59,7 @@ class PublicResetTests(unittest.TestCase):
         def fail():
             raise OSError('offline')
         cache.fetch = fail
-        now[0] += 301
+        now[0] += 61
         finished.clear()
         cache.snapshot()
         self.assertTrue(finished.wait(2))

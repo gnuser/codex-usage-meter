@@ -18,3 +18,8 @@ assert.equal(tooltipRows([], {count:null}, null, now)[0].value, 'Unknown');
 assert.equal(tooltipRows([], {count:0}, null, now).length, 1);
 assert.equal(tooltipRows([], {...credits, expired:true}, null, now)[0].value, 'Refresh needed');
 console.log('Compact tooltip: distinct reset meanings, forecast expiry and unknown states passed');
+
+const scheduled = { status: 'ok', scheduled: true, scheduledFor: now / 1000 + 3600 };
+assert.equal(tooltipRows([], {count:0}, scheduled, now).find(r => r.label === 'Announced').value, 'In 1h 0m');
+assert.equal(tooltipRows([], {count:0}, scheduled, now + 3600000).find(r => r.label === 'Announced').value, 'Awaiting confirmation');
+assert.equal(tooltipRows([], {count:0}, {...scheduled, scheduledFor: null}, now).find(r => r.label === 'Announced').value, 'Awaiting confirmation');

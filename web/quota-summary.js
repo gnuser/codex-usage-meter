@@ -20,7 +20,8 @@
     if (value.status !== 'ok') return heading + '\n' + (value.status === 'loading' ? 'Loading announcements…' : 'Announcements unavailable');
     const date = t => new Date(t * 1000).toLocaleString('en-US');
     let text = heading + '\nLatest announcement: ' + (timestamp(value.latestAt) ? date(value.latestAt) : 'Unknown');
-    if (value.scheduled) text += '\nAnnounced reset: awaiting execution confirmation';
+    if (value.scheduled) text += '\nAnnounced reset: ' + (timestamp(value.scheduledFor) && value.scheduledFor * 1000 > now
+      ? date(value.scheduledFor) + ' (in ' + countdown(value.scheduledFor, now) + ')' : 'awaiting execution confirmation');
     if (timestamp(value.watchUntil) && value.watchUntil * 1000 > now && value.forecast)
       text += '\nForecast (unconfirmed): ' + value.forecast + '\nWatch expires: ' + date(value.watchUntil);
     return text;

@@ -14,7 +14,11 @@ function tooltipRows(rings, credits, publicResets, now) {
   if (publicResets) {
     rows.push({ label: 'Public reset', value: publicResets.status === 'ok' ? date(publicResets.latestAt) : publicResets.status === 'loading' ? 'Loading…' : 'Unavailable', tone: 'muted', group: true });
     if (publicResets.status === 'ok') {
-      if (publicResets.scheduled) rows.push({ label: 'Announced', value: 'Awaiting confirmation', tone: 'warning' });
+      if (publicResets.scheduled) {
+        const future = Number.isFinite(publicResets.scheduledFor) && publicResets.scheduledFor * 1000 > now;
+        rows.push({ label: 'Announced', value: future ? 'In ' + countdown(publicResets.scheduledFor, now) : 'Awaiting confirmation',
+          note: Number.isFinite(publicResets.scheduledFor) ? date(publicResets.scheduledFor) : undefined, tone: 'warning' });
+      }
       if (publicResets.forecast && publicResets.watchUntil * 1000 > now) {
         rows.push({ label: 'Forecast', value: 'Unconfirmed', note: publicResets.forecast, tone: 'warning' });
         rows.push({ label: 'Watch ends', value: date(publicResets.watchUntil), tone: 'muted' });

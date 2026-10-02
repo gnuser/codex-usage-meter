@@ -1,5 +1,5 @@
 function installUsageBadge(createPopover, createCharts) {
-  const VERSION = 'usage-meter-48-3';
+  const VERSION = 'usage-meter-48-4';
   const KEY = '__codexUsageBadge';
   if (window[KEY]?.version === VERSION) {
     window[KEY].place();

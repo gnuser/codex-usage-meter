@@ -54,3 +54,6 @@ assert.equal(publicView.title, summarize({}, now).title);
 assert.equal(publicView.status, summarize({}, now).status);
 assert.doesNotMatch(summarize(publicData, now + 3600001).details, /Forecast/);
 assert.match(summarize({publicResets: {status: 'unavailable'}}, now).details, /unavailable/);
+const scheduledData = {publicResets: {...publicData.publicResets,scheduledFor: now / 1000 + 3600}};
+assert.match(summarize(scheduledData, now).details,/Announced reset: .*\(in 1h 0m\)/);
+assert.match(summarize(scheduledData, now + 3600000).details,/Announced reset: awaiting execution confirmation/);
