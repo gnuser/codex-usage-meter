@@ -113,14 +113,16 @@ class AppServer:
                 pass
 
 
-def account_snapshot(home=None, thread_id=None, factory=AppServer):
+def account_snapshot(home=None, thread_id=None, factory=AppServer, *, include_usage=True):
     result = {'source': 'official_app_server', 'fetchedAt': time.time(), 'errors': {},
               'limits': None, 'usage': None, 'threadEstimate': None}
     client = None
     try:
         client = factory(home=home)
-        requests = [('limits', 'account/rateLimits/read', {}), ('usage', 'account/usage/read', {})]
-        if thread_id:
+        requests = [('limits', 'account/rateLimits/read', {})]
+        if include_usage:
+            requests.append(('usage', 'account/usage/read', {}))
+        if thread_id and include_usage:
             requests.append(('threadEstimate', 'account/usage/read', {'threadId': thread_id}))
         for key, method, params in requests:
             try:

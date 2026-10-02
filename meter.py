@@ -153,8 +153,8 @@ def create_server(service, port=0):
                 except ValueError as exc:
                     return self.reply(400, {'error': str(exc)})
                 return self.reply(200, result)
-            if url.path == '/api/account':
-                account = account_snapshot(service.ledger.home, thread_id)
+            if url.path in ('/api/account', '/api/limits'):
+                account = account_snapshot(service.ledger.home, thread_id, include_usage=url.path == '/api/account')
                 account['windows'] = normalize_limits(account['limits'])
                 account['publicResets'] = service.public_resets.snapshot()
                 return self.reply(200, account)
