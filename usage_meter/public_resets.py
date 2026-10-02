@@ -85,9 +85,13 @@ def normalize(data):
     watch = data.get('active_watch') or {}
     if not isinstance(latest, dict) or not isinstance(watch, dict):
         raise ValueError('Invalid reset records')
+    scheduled = data.get('scheduled_reset')
+    if scheduled is not None and not isinstance(scheduled, dict):
+        raise ValueError('Invalid scheduled reset')
     forecast = watch.get('forecast_window')
     return {'latestAt': timestamp(latest.get('announced_at')),
-            'scheduled': isinstance(data.get('scheduled_reset'), dict),
+            'scheduled': isinstance(scheduled, dict),
+            'scheduledFor': timestamp((scheduled or {}).get('scheduled_for')),
             'watchUntil': timestamp(watch.get('expires_at')),
             'forecast': forecast[:500] if isinstance(forecast, str) else None}
 
@@ -112,7 +116,7 @@ class PublicResets:
     def _refresh(self):
         try:
             value = {**self.fetch(), 'source': SOURCE, 'status': 'ok', 'checkedAt': self.clock()}
-            delay = 300
+            delay = 60
         except Exception:
             value = {'source': SOURCE, 'status': 'unavailable'}
             delay = 60

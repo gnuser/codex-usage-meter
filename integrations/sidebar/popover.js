@@ -154,10 +154,11 @@ function createUsagePopover(panel, onClose, onPin, createCharts) {
     newsSection.hidden = !publicRows.length;
     const forecast = publicRows.find(r => r.label === 'Forecast');
     const latest = publicRows.find(r => r.label === 'Public reset');
-    newsTitle.textContent = forecast ? 'Reset forecast · Unconfirmed' : 'Public reset · ' + (latest?.value || 'Unknown');
-    newsNote.textContent = forecast?.note || '';
-    newsNote.title = forecast?.note || '';
-    newsNote.hidden = !forecast?.note;
+    const announced = publicRows.find(r => r.label === 'Announced');
+    newsTitle.textContent = announced ? 'Scheduled reset · ' + announced.value : forecast ? 'Reset forecast · Unconfirmed' : 'Public reset · ' + (latest?.value || 'Unknown');
+    newsNote.textContent = announced?.note || forecast?.note || '';
+    newsNote.title = newsNote.textContent;
+    newsNote.hidden = !newsNote.textContent;
     newsBody.textContent = publicRows.map(r => r.label + ': ' + r.value + (r.note ? '\n' + r.note : '')).join('\n');
   }
   return { update, hideTips: charts.hide, setPinned(value) { pin.setAttribute('aria-pressed', String(value)); pin.title = value ? 'Unpin panel' : 'Pin panel'; pin.setAttribute('aria-label', pin.title); } };
